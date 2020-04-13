@@ -3,7 +3,6 @@ package com.jiahaoliuliu.googlemapsroute
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,6 +16,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import timber.log.Timber
 
 class LocationFragment: Fragment() {
 
@@ -24,7 +24,6 @@ class LocationFragment: Fragment() {
         private const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1000
         private val DEFAULT_LOCATION = LatLng(25.276, 55.296)
         private const val DEFAULT_ZOOM = 15F
-        private const val TAG = "KARE"
     }
 
     private var googleMap: GoogleMap? = null
@@ -43,6 +42,7 @@ class LocationFragment: Fragment() {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity!!)
         val supportMapFragment = childFragmentManager!!.findFragmentById(R.id.maps) as SupportMapFragment
         supportMapFragment.getMapAsync {
+            Timber.v("Map synchronized")
             googleMap = it
             getLocationPermission()
         }
@@ -132,8 +132,7 @@ class LocationFragment: Fragment() {
                         onMarkerClickListener?.onMarkerClick(marker)!!
                     }
                 } else {
-                    Log.d(TAG, "Current location is null. Using defaults.");
-                    Log.e(TAG, "Exception: %s", task.exception);
+                    Timber.w(task.exception,"Current location is null. Using defaults.");
                     it.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM))
                     it.uiSettings.isMyLocationButtonEnabled = false
                 }
