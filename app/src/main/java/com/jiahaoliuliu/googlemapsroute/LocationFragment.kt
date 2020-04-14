@@ -16,16 +16,23 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.jiahaoliuliu.datalayer.DistanceRepository
+import com.jiahaoliuliu.entity.Coordinate
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
+import javax.inject.Inject
 
 class LocationFragment: Fragment() {
 
     companion object {
         private const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1000
         private val DEFAULT_LOCATION = LatLng(25.276, 55.296)
+        private val DXB_AIRPORT_LOCATION = LatLng(25.2527777777778, 55.3644444444444)
         private const val DEFAULT_ZOOM = 15F
     }
 
+    @Inject lateinit var distanceRepository: DistanceRepository
     private var googleMap: GoogleMap? = null
     private var locationPermissionGranted = false
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -121,22 +128,38 @@ class LocationFragment: Fragment() {
             locationResult.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     lastKnownLocation = task.result
-                    val lastKnownLocationLatLng = LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
-                    it.moveCamera(CameraUpdateFactory.newLatLngZoom(lastKnownLocationLatLng, DEFAULT_ZOOM))
-
-                    val markerOptions = MarkerOptions()
-                    markerOptions.position(lastKnownLocationLatLng)
-                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-                    it.addMarker(markerOptions)
-                    it.setOnMarkerClickListener {marker ->
-                        onMarkerClickListener?.onMarkerClick(marker)!!
-                    }
+                    setMarkerToLastKnownLocation(it)
+                    drawDistanceToTheAirport()
                 } else {
                     Timber.w(task.exception,"Current location is null. Using defaults.");
                     it.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM))
                     it.uiSettings.isMyLocationButtonEnabled = false
                 }
             }
+        }
+    }
+
+    private fun drawDistanceToTheAirport() {
+        lastKnownLocation?.let {
+            distanceRepository.calculateDistance(Coordinate(it.latitude, it.longitude),
+                Coordinate(DXB_AIRPORT_LOCATION.latitude, DXB_AIRPORT_LOCATION.longitude))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe()
+        }
+    }
+
+    private fun setMarkerToLastKnownLocation(googleMap: GoogleMap) {
+        val lastKnownLocationLatLng =
+            LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastKnownLocationLatLng, DEFAULT_ZOOM))
+
+        val markerOptions = MarkerOptions()
+        markerOptions.position(lastKnownLocationLatLng)
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+        googleMap.addMarker(markerOptions)
+        googleMap.setOnMarkerClickListener { marker ->
+            onMarkerClickListener?.onMarkerClick(marker)!!
         }
     }
 

@@ -42,5 +42,6 @@ ext {
     dagger = "2.27"
     retrofit = "2.8.1"
     rxjava = "2.2.19"
+    rxAndroid = "2.1.1"
     gson = "2.8.6"
 }
