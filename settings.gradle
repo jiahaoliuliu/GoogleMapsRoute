@@ -1,3 +1,4 @@
 rootProject.name='Google Maps Route'
 include ':app'
 include ':datalayer'
+include ':entity'
