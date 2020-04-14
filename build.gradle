@@ -39,4 +39,5 @@ ext {
     minSdk = 24
     versionCode = 1
     versionName = "0.0.1"
+    dagger = "2.27"
 }
