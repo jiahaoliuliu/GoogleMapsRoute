@@ -40,7 +40,7 @@ class LocationFragment: Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity!!)
-        val supportMapFragment = childFragmentManager!!.findFragmentById(R.id.maps) as SupportMapFragment
+        val supportMapFragment = childFragmentManager.findFragmentById(R.id.maps) as SupportMapFragment
         supportMapFragment.getMapAsync {
             Timber.v("Map synchronized")
             googleMap = it
