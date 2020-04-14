@@ -40,4 +40,7 @@ ext {
     versionCode = 1
     versionName = "0.0.1"
     dagger = "2.27"
+    retrofit = "2.8.1"
+    rxjava = "2.2.19"
+    gson = "2.8.6"
 }
