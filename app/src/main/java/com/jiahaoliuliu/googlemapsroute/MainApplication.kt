@@ -5,7 +5,11 @@ import timber.log.Timber
 
 class MainApplication: Application() {
 
-    private var mainComponent: MainComponent? = null
+
+    companion object {
+        private var mainComponent: MainComponent? = null
+        fun getMainComponent() = mainComponent
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -15,5 +19,4 @@ class MainApplication: Application() {
             .build()
     }
 
-    fun getMainComponent() = mainComponent
 }

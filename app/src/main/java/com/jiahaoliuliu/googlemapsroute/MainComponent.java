@@ -11,4 +11,5 @@ import dagger.Component;
 
 @Singleton
 public interface MainComponent {
+    void inject(LocationFragment locationFragment);
 }

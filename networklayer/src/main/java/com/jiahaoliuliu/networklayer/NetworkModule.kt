@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 @Module
 class NetworkModule {
     companion object {
-        private const val BASE_URL = ""
+        private const val BASE_URL = "http://www.google.com"
     }
 
     private val retrofit = Retrofit.Builder()

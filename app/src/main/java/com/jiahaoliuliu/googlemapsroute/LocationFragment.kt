@@ -46,6 +46,7 @@ class LocationFragment: Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        MainApplication.getMainComponent()?.inject(this)
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity!!)
         val supportMapFragment = childFragmentManager.findFragmentById(R.id.maps) as SupportMapFragment
         supportMapFragment.getMapAsync {
@@ -145,7 +146,9 @@ class LocationFragment: Fragment() {
                 Coordinate(DXB_AIRPORT_LOCATION.latitude, DXB_AIRPORT_LOCATION.longitude))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe()
+                .subscribe({distance -> Timber.v("Distance Returned $distance")},
+                    {throwable -> Timber.e(throwable, "Error getting the distance")}
+                )
         }
     }
 
