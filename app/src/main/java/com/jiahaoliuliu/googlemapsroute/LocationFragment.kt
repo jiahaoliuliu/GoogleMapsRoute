@@ -127,11 +127,12 @@ class LocationFragment: Fragment() {
             }
             val locationResult = fusedLocationProviderClient.lastLocation
             locationResult.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
+                if (task.isSuccessful && task.result != null) {
                     lastKnownLocation = task.result
                     setMarkerToLastKnownLocation(it)
                     drawDistanceToTheAirport()
                 } else {
+                    // TODO: Subscribe to updates from fused service
                     Timber.w(task.exception,"Current location is null. Using defaults.");
                     it.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM))
                     it.uiSettings.isMyLocationButtonEnabled = false

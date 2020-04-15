@@ -20,6 +20,6 @@ interface GoogleDistanceAPIService {
      */
     @GET("https://maps.googleapis.com/maps/api/distancematrix/json")
     fun getDistance(@Query("language") language: String = LANGUAGE_EN, @Query("units") units: String = UNITS_METRIC,
-        @Query("origin") origin: String, @Query("destinations") destinations: String,
+        @Query("origins", encoded=true) origin: String, @Query("destinations", encoded=true) destinations: String,
         @Query("key") key: String = GOOGLE_API_KEY): Single<Distance>
 }
