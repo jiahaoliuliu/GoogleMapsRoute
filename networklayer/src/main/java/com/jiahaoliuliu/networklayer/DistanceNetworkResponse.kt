@@ -1,5 +1,7 @@
 package com.jiahaoliuliu.networklayer
 
+import com.google.gson.annotations.SerializedName
+
 //{
 //    "destination_addresses":  [
 //    "ATC TOWER, Dubai Airport - Dubai International Airport - Dubai - United Arab Emirates",
@@ -50,4 +52,24 @@ package com.jiahaoliuliu.networklayer
 //    ],
 //    "status":  "OK"
 //}
-data class Distance(private val status: String)
+data class DistanceNetworkResponse(
+    @SerializedName("destination_addresses")
+    private val destinationAddresses: List<String>,
+
+    @SerializedName("origin_addresses")
+    private val originAddresses: List<String>,
+
+    @SerializedName("rows")
+    private val distances: List<Distance>,
+
+    private val status: String)
+
+data class Distance(@SerializedName("elements") private val distanceElementsList: List<DistanceElement>)
+
+data class DistanceElement(
+    private val distance: DistanceValue,
+    private val duration: DistanceValue,
+    private val status: String
+)
+
+data class DistanceValue(private val text: String, private val value: Int)
