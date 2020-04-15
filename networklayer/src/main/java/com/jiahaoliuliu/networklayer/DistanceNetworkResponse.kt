@@ -54,22 +54,22 @@ import com.google.gson.annotations.SerializedName
 //}
 data class DistanceNetworkResponse(
     @SerializedName("destination_addresses")
-    private val destinationAddresses: List<String>,
+    val destinationAddresses: List<String>,
 
     @SerializedName("origin_addresses")
-    private val originAddresses: List<String>,
+    val originAddresses: List<String>,
 
     @SerializedName("rows")
-    private val distances: List<Distance>,
+    val distances: List<Distance>,
 
-    private val status: String)
+    val status: String)
 
-data class Distance(@SerializedName("elements") private val distanceElementsList: List<DistanceElement>)
+data class Distance(@SerializedName("elements") val distanceElementsList: List<DistanceElement>)
 
 data class DistanceElement(
-    private val distance: DistanceValue,
-    private val duration: DistanceValue,
-    private val status: String
+    val distance: DistanceValue,
+    val duration: DistanceValue,
+    val status: String
 )
 
-data class DistanceValue(private val text: String, private val value: Int)
+data class DistanceValue(val text: String, val value: Int)
