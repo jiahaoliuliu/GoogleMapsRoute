@@ -2,8 +2,8 @@ package com.jiahaoliuliu.datalayer
 
 import com.jiahaoliuliu.entity.Coordinate
 import com.jiahaoliuliu.entity.Distance
-import com.jiahaoliuliu.networklayer.DistanceNetworkResponse
-import com.jiahaoliuliu.networklayer.GoogleDistanceMatrixAPIService
+import com.jiahaoliuliu.networklayer.distance.DistanceNetworkResponse
+import com.jiahaoliuliu.networklayer.distance.GoogleDistanceMatrixAPIService
 import io.reactivex.Single
 
 class DistanceRepository(private val googleDistanceMatrixAPIService: GoogleDistanceMatrixAPIService) {
@@ -22,8 +22,8 @@ class DistanceRepository(private val googleDistanceMatrixAPIService: GoogleDista
     }
 
     private fun mapDistanceNetworkResponseToInternalDistance(
-            distanceNetworkResponse: DistanceNetworkResponse,
-            origin: Coordinate, destination: Coordinate): Distance {
+        distanceNetworkResponse: DistanceNetworkResponse,
+        origin: Coordinate, destination: Coordinate): Distance {
         return Distance(
             distanceNetworkResponse.originAddresses[0], origin,
             distanceNetworkResponse.destinationAddresses[0], destination,

@@ -1,5 +1,6 @@
-package com.jiahaoliuliu.networklayer
+package com.jiahaoliuliu.networklayer.distance
 
+import com.jiahaoliuliu.networklayer.GOOGLE_API_KEY
 import io.reactivex.Single
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -20,6 +21,7 @@ interface GoogleDistanceMatrixAPIService {
      */
     @GET("https://maps.googleapis.com/maps/api/distancematrix/json")
     fun getDistance(@Query("language") language: String = LANGUAGE_EN, @Query("units") units: String = UNITS_METRIC,
-        @Query("origins", encoded=true) origin: String, @Query("destinations", encoded=true) destinations: String,
-        @Query("key") key: String = GOOGLE_API_KEY): Single<DistanceNetworkResponse>
+                    @Query("origins", encoded=true) origin: String, @Query("destinations", encoded=true) destinations: String,
+                    @Query("key") key: String = GOOGLE_API_KEY
+    ): Single<DistanceNetworkResponse>
 }

@@ -1,7 +1,7 @@
 package com.jiahaoliuliu.datalayer
 
 import com.jiahaoliuliu.entity.Coordinate
-import com.jiahaoliuliu.networklayer.GoogleDirectionAPIService
+import com.jiahaoliuliu.networklayer.direction.GoogleDirectionAPIService
 import io.reactivex.Single
 
 class DirectionRepository(private val googleDirectionAPIService: GoogleDirectionAPIService) {

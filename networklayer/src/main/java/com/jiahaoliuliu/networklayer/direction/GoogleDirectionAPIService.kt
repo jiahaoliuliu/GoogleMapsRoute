@@ -1,5 +1,6 @@
-package com.jiahaoliuliu.networklayer
+package com.jiahaoliuliu.networklayer.direction
 
+import com.jiahaoliuliu.networklayer.GOOGLE_API_KEY
 import io.reactivex.Single
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -21,6 +22,7 @@ interface GoogleDirectionAPIService {
     @GET("https://maps.googleapis.com/maps/api/directions/json")
     fun getDistance(@Query("language") language: String = LANGUAGE_EN, @Query("units") units: String = UNITS_METRIC,
                     @Query("origin", encoded=true) origin: String, @Query("destination", encoded=true) destinations: String,
-                    @Query("key") key: String = GOOGLE_API_KEY): Single<String>
+                    @Query("key") key: String = GOOGLE_API_KEY
+    ): Single<String>
 
 }

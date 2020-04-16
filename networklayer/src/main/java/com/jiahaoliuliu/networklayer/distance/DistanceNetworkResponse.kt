@@ -1,4 +1,4 @@
-package com.jiahaoliuliu.networklayer
+package com.jiahaoliuliu.networklayer.distance
 
 import com.google.gson.annotations.SerializedName
 

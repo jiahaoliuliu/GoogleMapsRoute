@@ -1,5 +1,7 @@
 package com.jiahaoliuliu.networklayer
 
+import com.jiahaoliuliu.networklayer.direction.GoogleDirectionAPIService
+import com.jiahaoliuliu.networklayer.distance.GoogleDistanceMatrixAPIService
 import dagger.Module
 import dagger.Provides
 import okhttp3.OkHttpClient
