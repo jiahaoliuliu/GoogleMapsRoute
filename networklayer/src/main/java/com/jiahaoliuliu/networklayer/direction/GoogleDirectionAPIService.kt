@@ -15,7 +15,8 @@ interface GoogleDirectionAPIService {
     /**
      * https://maps.googleapis.com/maps/api/directions/json?
      *      origin=25.276,55.296&
-     *      destination=25.2527777777778,55.3644444444444&key=AIzaSyD8fbannDNMQRswwN5h1jsGQXWyvRvGKr4&
+     *      destination=25.2527777777778,55.3644444444444&
+     *      key=Your_Key
      *      language=en&
      *      units=metric
      */
