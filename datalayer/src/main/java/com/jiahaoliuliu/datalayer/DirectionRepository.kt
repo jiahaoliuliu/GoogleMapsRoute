@@ -1,9 +1,11 @@
 package com.jiahaoliuliu.datalayer
 
+import com.jiahaoliuliu.entity.Bounds
 import com.jiahaoliuliu.entity.Coordinate
+import com.jiahaoliuliu.entity.Direction
+import com.jiahaoliuliu.networklayer.direction.DirectionNetworkResponse
 import com.jiahaoliuliu.networklayer.direction.GoogleDirectionAPIService
 import io.reactivex.Single
-import timber.log.Timber
 
 class DirectionRepository(private val googleDirectionAPIService: GoogleDirectionAPIService) {
 
@@ -11,20 +13,34 @@ class DirectionRepository(private val googleDirectionAPIService: GoogleDirection
         private const val COORDINATOR_SEPARATOR = ","
     }
 
-    fun calculateDirection(origin: Coordinate, destination: Coordinate): Single<String> {
+    fun calculateDirection(origin: Coordinate, destination: Coordinate): Single<Direction> {
         return googleDirectionAPIService.getDirection(
             origin = origin.toStringWithSeparator(COORDINATOR_SEPARATOR),
             destinations = destination.toStringWithSeparator(COORDINATOR_SEPARATOR))
-            .map {
-                Timber.v("Direction from network $it")
-                it.toString()
-            }
-//            .map {mapNetworkDirectionResponseToInternalDirectionResponse(it)}
+            .map {mapNetworkDirectionResponseToInternalDirectionResponse(it)}
     }
 
-//    private fun mapNetworkDirectionResponseToInternalDirectionResponse(
-//        directionNetworkResponse: DirectionNetworkResponse): Direction {
-//        return Direction()
-//    }
+    private fun mapNetworkDirectionResponseToInternalDirectionResponse(
+        directionNetworkResponse: DirectionNetworkResponse
+    ): Direction {
+        val route = directionNetworkResponse.routes[0]
+        val leg = route.legs[0]
+        return Direction(
+            mapNetworkBoundsToInternalBounds(route.bounds), leg.distance.text, leg.duration.text,
+            leg.startAddress, mapNetworkCoordinateToInternalCoordinate(leg.startLocation),
+            leg.endAddress, mapNetworkCoordinateToInternalCoordinate(leg.endLocation),
+            route.polyline.points)
+    }
+
+    private fun mapNetworkBoundsToInternalBounds(bounds: com.jiahaoliuliu.networklayer.direction.Bounds): Bounds {
+        return Bounds(
+            mapNetworkCoordinateToInternalCoordinate(bounds.northeast),
+            mapNetworkCoordinateToInternalCoordinate(bounds.southwest))
+    }
+
+    private fun mapNetworkCoordinateToInternalCoordinate(
+        coordinate: com.jiahaoliuliu.networklayer.direction.Coordinate): Coordinate {
+        return Coordinate(coordinate.latitude, coordinate.longitude)
+    }
 
 }
