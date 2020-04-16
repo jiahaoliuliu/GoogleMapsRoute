@@ -36,6 +36,8 @@ class LocationFragment: Fragment() {
         private val DEFAULT_LOCATION = LatLng(25.276, 55.296)
         private val DXB_AIRPORT_LOCATION = LatLng(25.253176, 55.365673)
         private const val DEFAULT_ZOOM = 15F
+        // offset from edges of the map - 20% of screen
+        private const val PERCENTAGE_PADDING = 20
     }
 
     @Inject lateinit var distanceRepository: DistanceRepository
@@ -44,7 +46,6 @@ class LocationFragment: Fragment() {
     private var locationPermissionGranted = false
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private var lastKnownLocation: Location? = null
-    private var userPositionMarker: Marker? = null
     private var onMarkerClickListener: GoogleMap.OnMarkerClickListener? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -180,6 +181,17 @@ class LocationFragment: Fragment() {
                         .anchor(0.5f, 0.5f)
                         .icon(BitmapDescriptorFactory.fromBitmap(bmp))
                     )
+
+                    // Move the camera
+                    val width = resources.displayMetrics.widthPixels;
+                    val height = resources.displayMetrics.heightPixels;
+                    val padding = (width * PERCENTAGE_PADDING/100)
+
+                    val bounds = LatLngBounds.builder()
+                        .include(LatLng(direction.bounds.northeast.latitude, direction.bounds.northeast.longitude))
+                        .include(LatLng(direction.bounds.southwest.latitude, direction.bounds.southwest.longitude))
+                        .build()
+                    googleMap?.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding))
                 },
                     {throwable -> Timber.e(throwable, "Error getting the direction")}
                 )
