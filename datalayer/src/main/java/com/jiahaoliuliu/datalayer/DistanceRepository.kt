@@ -27,7 +27,7 @@ class DistanceRepository(private val googleDistanceMatrixAPIService: GoogleDista
         return Distance(
             distanceNetworkResponse.originAddresses[0], origin,
             distanceNetworkResponse.destinationAddresses[0], destination,
-            distanceNetworkResponse.distances[0].distanceElementsList[0].distance.text,
+            distanceNetworkResponse.distances[0].distanceElementsList[0].text.text,
             distanceNetworkResponse.distances[0].distanceElementsList[0].duration.text
         )
     }

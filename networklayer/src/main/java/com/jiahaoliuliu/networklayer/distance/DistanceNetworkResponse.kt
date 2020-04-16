@@ -67,9 +67,9 @@ data class DistanceNetworkResponse(
 data class Distance(@SerializedName("elements") val distanceElementsList: List<DistanceElement>)
 
 data class DistanceElement(
-    val distance: DistanceValue,
-    val duration: DistanceValue,
+    val text: TextValue,
+    val duration: TextValue,
     val status: String
 )
 
-data class DistanceValue(val text: String, val value: Int)
+data class TextValue(val text: String, val value: Int)
