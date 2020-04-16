@@ -17,7 +17,7 @@ class DistanceRepository(private val googleDistanceMatrixAPIService: GoogleDista
 //
         return googleDistanceMatrixAPIService.getDistance(
                 origin = origin.toString(),
-                destinations = destination.toString())
+                destinations = destination.toStringWithSeparator("+"))
             .map { mapDistanceNetworkResponseToInternalDistance(it, origin, destination)}
     }
 

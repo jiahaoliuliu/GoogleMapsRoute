@@ -16,6 +16,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.datalayer.DistanceRepository
 import com.jiahaoliuliu.entity.Coordinate
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -33,6 +34,7 @@ class LocationFragment: Fragment() {
     }
 
     @Inject lateinit var distanceRepository: DistanceRepository
+    @Inject lateinit var directionRepository: DirectionRepository
     private var googleMap: GoogleMap? = null
     private var locationPermissionGranted = false
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -143,12 +145,20 @@ class LocationFragment: Fragment() {
 
     private fun drawDistanceToTheAirport() {
         lastKnownLocation?.let {
-            distanceRepository.calculateDistance(Coordinate(it.latitude, it.longitude),
-                Coordinate(DXB_AIRPORT_LOCATION.latitude, DXB_AIRPORT_LOCATION.longitude))
+//            distanceRepository.calculateDistance(Coordinate(it.latitude, it.longitude),
+//                Coordinate(DXB_AIRPORT_LOCATION.latitude, DXB_AIRPORT_LOCATION.longitude))
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe({distance -> Timber.v("Distance Returned $distance")},
+//                    {throwable -> Timber.e(throwable, "Error getting the distance")}
+//                )
+
+            directionRepository.calculateDirection(Coordinate(it.latitude, it.longitude),
+            Coordinate(DXB_AIRPORT_LOCATION.latitude, DXB_AIRPORT_LOCATION.longitude))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({distance -> Timber.v("Distance Returned $distance")},
-                    {throwable -> Timber.e(throwable, "Error getting the distance")}
+                .subscribe({direction -> Timber.v("direction Returned $direction")},
+                    {throwable -> Timber.e(throwable, "Error getting the direction")}
                 )
         }
     }

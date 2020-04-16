@@ -30,7 +30,12 @@ class NetworkModule {
     }
 
     @Provides
-    fun provideGoogleDistanceApiService(): GoogleDistanceMatrixAPIService {
+    fun provideGoogleDistanceMatrixApiService(): GoogleDistanceMatrixAPIService {
         return retrofit.create(GoogleDistanceMatrixAPIService::class.java)
+    }
+
+    @Provides
+    fun provideGoogleDirectionsApiService(): GoogleDirectionAPIService {
+        return retrofit.create(GoogleDirectionAPIService::class.java)
     }
 }
