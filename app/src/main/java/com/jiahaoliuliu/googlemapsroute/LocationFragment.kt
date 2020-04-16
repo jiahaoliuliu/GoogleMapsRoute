@@ -46,7 +46,7 @@ class LocationFragment: Fragment() {
     private var locationPermissionGranted = false
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private var lastKnownLocation: Location? = null
-    private var onMarkerClickListener: GoogleMap.OnMarkerClickListener? = null
+//    private var onMarkerClickListener: GoogleMap.OnMarkerClickListener? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
@@ -207,13 +207,6 @@ class LocationFragment: Fragment() {
         markerOptions.position(lastKnownLocationLatLng)
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
         googleMap.addMarker(markerOptions)
-        googleMap.setOnMarkerClickListener { marker ->
-            onMarkerClickListener?.onMarkerClick(marker)!!
-        }
-    }
-
-    fun setOnMarkerClickListener(onMarkerClickListener: GoogleMap.OnMarkerClickListener) {
-        this.onMarkerClickListener = onMarkerClickListener
     }
 
     private fun loadBitmapFromView(v: View): Bitmap {
