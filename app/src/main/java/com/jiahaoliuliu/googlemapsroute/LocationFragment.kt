@@ -16,6 +16,8 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
+import com.google.maps.android.PolyUtil
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.datalayer.DistanceRepository
 import com.jiahaoliuliu.entity.Coordinate
@@ -157,7 +159,13 @@ class LocationFragment: Fragment() {
             Coordinate(DXB_AIRPORT_LOCATION.latitude, DXB_AIRPORT_LOCATION.longitude))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({direction -> Timber.v("direction Returned $direction")},
+                .subscribe({
+                        direction -> Timber.v("direction Returned $direction")
+                    googleMap?.addPolyline(
+                        PolylineOptions()
+                            .color(ContextCompat.getColor(context!!, R.color.colorRoute))
+                        .addAll(PolyUtil.decode(direction.polyline)))
+                },
                     {throwable -> Timber.e(throwable, "Error getting the direction")}
                 )
         }
