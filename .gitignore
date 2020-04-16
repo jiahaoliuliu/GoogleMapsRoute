@@ -85,4 +85,5 @@ lint/tmp/
 # lint/reports/
 
 # Secret
+networklayer/src/main/java/com/jiahaoliuliu/networklayer/secret.kt
 app/src/main/res/values/secret.xml
