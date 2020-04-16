@@ -3,10 +3,10 @@ package com.jiahaoliuliu.datalayer
 import com.jiahaoliuliu.entity.Coordinate
 import com.jiahaoliuliu.entity.Distance
 import com.jiahaoliuliu.networklayer.DistanceNetworkResponse
-import com.jiahaoliuliu.networklayer.GoogleDistanceAPIService
+import com.jiahaoliuliu.networklayer.GoogleDistanceMatrixAPIService
 import io.reactivex.Single
 
-class DistanceRepository(private val googleDistanceAPIService: GoogleDistanceAPIService) {
+class DistanceRepository(private val googleDistanceMatrixAPIService: GoogleDistanceMatrixAPIService) {
 
     fun calculateDistance(origin: Coordinate, destination: Coordinate): Single<Distance> {
 //        // Dummy data
@@ -15,7 +15,7 @@ class DistanceRepository(private val googleDistanceAPIService: GoogleDistanceAPI
 //            "17.3km", "17 minutes"
 //        )
 //
-        return googleDistanceAPIService.getDistance(
+        return googleDistanceMatrixAPIService.getDistance(
                 origin = origin.toString(),
                 destinations = destination.toString())
             .map { mapDistanceNetworkResponseToInternalDistance(it, origin, destination)}

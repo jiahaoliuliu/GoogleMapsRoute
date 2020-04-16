@@ -4,7 +4,7 @@ import io.reactivex.Single
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface GoogleDistanceAPIService {
+interface GoogleDistanceMatrixAPIService {
     companion object {
         private const val LANGUAGE_EN = "en"
         private const val UNITS_METRIC = "metric"

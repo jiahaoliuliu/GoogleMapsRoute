@@ -1,6 +1,6 @@
 package com.jiahaoliuliu.datalayer
 
-import com.jiahaoliuliu.networklayer.GoogleDistanceAPIService
+import com.jiahaoliuliu.networklayer.GoogleDistanceMatrixAPIService
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -11,7 +11,7 @@ class RepositoryModule {
     @Provides
     @Singleton
     fun provideDistanceRepository(
-        googleDistanceAPIService: GoogleDistanceAPIService): DistanceRepository {
-        return DistanceRepository(googleDistanceAPIService)
+        googleDistanceMatrixAPIService: GoogleDistanceMatrixAPIService): DistanceRepository {
+        return DistanceRepository(googleDistanceMatrixAPIService)
     }
 }
