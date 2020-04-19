@@ -7,7 +7,7 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.jiahaoliuliu.googlemapsroute.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity(), SearchLocationListener {
+class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoundListener {
 
     private lateinit var binding: ActivityMainBinding
     // TODO: Pass the arguments
@@ -31,23 +31,23 @@ class MainActivity : AppCompatActivity(), SearchLocationListener {
         binding.locationTabs.addOnTabSelectedListener(object: OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 if (tab == originTab) {
-                    showOriginTab()
+                    showOriginScreen()
                 } else {
-                    showDestinationTab()
+                    showDestinationScreen()
                 }
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {}
             override fun onTabReselected(tab: TabLayout.Tab) {}
         })
-        showOriginTab()
+        showOriginScreen()
     }
 
-    private fun showOriginTab() {
+    private fun showOriginScreen() {
         supportFragmentManager.beginTransaction().replace(R.id.container, originFragment).commit()
     }
 
-    private fun showDestinationTab() {
+    private fun showDestinationScreen() {
         supportFragmentManager.beginTransaction().replace(R.id.container, destinationFragment).commit()
     }
 
@@ -59,5 +59,10 @@ class MainActivity : AppCompatActivity(), SearchLocationListener {
             locationSearchFragment = LocationSearchFragment.newInstance(address)
             supportFragmentManager.beginTransaction().replace(R.id.container, locationSearchFragment!!).commit()
         }
+    }
+
+    override fun onLocationFound(id: String) {
+        destinationFragment.showRouteToLocation(id)
+        showDestinationScreen()
     }
 }

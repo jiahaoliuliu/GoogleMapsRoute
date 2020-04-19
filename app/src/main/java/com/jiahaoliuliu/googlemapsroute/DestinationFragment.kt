@@ -72,6 +72,10 @@ class DestinationFragment: Fragment() {
                     DEFAULT_ZOOM))
         }
     }
+
+    fun showRouteToLocation(placeId: String) {
+        Timber.v("The place to be shown is $placeId")
+    }
 }
 
 interface SearchLocationListener {

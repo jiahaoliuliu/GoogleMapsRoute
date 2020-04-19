@@ -1,6 +1,7 @@
 package com.jiahaoliuliu.googlemapsroute
 
 import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.text.Editable
@@ -38,6 +39,16 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
     private var addressToBeFound: String? = null
     private var userInputTimer: CountDownTimer? = null
     private lateinit var locationListAdapter: LocationsListAdapter
+    private lateinit var onLocationFoundListener: OnLocationFoundListener
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnLocationFoundListener) {
+            onLocationFoundListener = context
+        } else {
+            throw ClassCastException("The attached activity must implement OnLocationFoundListener")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -109,6 +120,11 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
     }
 
     override fun onPlaceClicked(id: String) {
-        // TODO
+        onLocationFoundListener.onLocationFound(id)
     }
+}
+
+interface OnLocationFoundListener {
+
+    fun onLocationFound(id: String)
 }
