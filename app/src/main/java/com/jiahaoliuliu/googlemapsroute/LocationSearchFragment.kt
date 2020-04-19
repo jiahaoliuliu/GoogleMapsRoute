@@ -15,7 +15,7 @@ import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import javax.inject.Inject
 
-class LocationSearchFragment: Fragment() {
+class LocationSearchFragment: Fragment(), OnPlaceClickListener {
 
     companion object {
         private const val TIME_DIFFERENCE_FOR_INPUT = 1000L
@@ -34,6 +34,7 @@ class LocationSearchFragment: Fragment() {
     private lateinit var binding: FragmentLocationSearchBinding
     private var addressToBeFound: String? = null
     private var userInputTimer: CountDownTimer? = null
+    private lateinit var locationListAdapter: LocationsListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +52,8 @@ class LocationSearchFragment: Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         MainApplication.getMainComponent()?.inject(this)
+        locationListAdapter = LocationsListAdapter(this)
+        binding.locationResultsList.adapter = locationListAdapter
         binding.addressInput.addTextChangedListener(object: TextWatcher{
             override fun afterTextChanged(s: Editable?) {
                 addressToBeFound = s.toString()
@@ -89,12 +92,17 @@ class LocationSearchFragment: Fragment() {
             placesRepository.retrievePredictions(it)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ location -> Timber.v("New location $location")
+                .subscribe({ placesList ->
+                    locationListAdapter.updatePlacesList(placesList)
                 }, {throwable -> Timber.e(throwable, "Error finding the address")})
         }
     }
 
     fun updateAddress(address: String) {
         binding.addressInput.setText(address)
+    }
+
+    override fun onPlaceClicked(id: String) {
+        // TODO
     }
 }
