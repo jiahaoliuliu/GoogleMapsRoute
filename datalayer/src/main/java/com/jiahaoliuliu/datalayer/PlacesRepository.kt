@@ -1,12 +1,16 @@
 package com.jiahaoliuliu.datalayer
 
-import com.jiahaoliuliu.networklayer.geocoding.GoogleGeocodingAPIService
+import com.jiahaoliuliu.networklayer.places.GooglePlacesAPIService
 import io.reactivex.Single
 
-class GeocodingRepository(private val googleGeocodingAPIService: GoogleGeocodingAPIService) {
+class PlacesRepository(private val googlePlacesAPIService: GooglePlacesAPIService) {
 
     fun retrieveLocation(address: String): Single<String> {
-        return googleGeocodingAPIService.getLocation(address = address)
+        return googlePlacesAPIService.getLocation(address = address)
+    }
+
+    fun retrievePredictions(input: String): Single<String> {
+        return googlePlacesAPIService.getPredictions(input = input)
     }
 
 //    private fun mapNetworkDirectionResponseToInternalDirectionResponse(

@@ -8,7 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.jiahaoliuliu.datalayer.GeocodingRepository
+import com.jiahaoliuliu.datalayer.PlacesRepository
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentLocationSearchBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -30,7 +30,7 @@ class LocationSearchFragment: Fragment() {
         }
     }
 
-    @Inject lateinit var geocodingRepository: GeocodingRepository
+    @Inject lateinit var placesRepository: PlacesRepository
     private lateinit var binding: FragmentLocationSearchBinding
     private var addressToBeFound: String? = null
     private var userInputTimer: CountDownTimer? = null
@@ -86,7 +86,7 @@ class LocationSearchFragment: Fragment() {
                 return
             }
 
-            geocodingRepository.retrieveLocation(it)
+            placesRepository.retrievePredictions(it)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ location -> Timber.v("New location $location")

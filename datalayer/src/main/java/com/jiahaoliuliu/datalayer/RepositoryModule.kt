@@ -2,7 +2,7 @@ package com.jiahaoliuliu.datalayer
 
 import com.jiahaoliuliu.networklayer.direction.GoogleDirectionAPIService
 import com.jiahaoliuliu.networklayer.distance.GoogleDistanceMatrixAPIService
-import com.jiahaoliuliu.networklayer.geocoding.GoogleGeocodingAPIService
+import com.jiahaoliuliu.networklayer.places.GooglePlacesAPIService
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -24,6 +24,6 @@ class RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideGeocodingRepository(googleGeocodingAPIService: GoogleGeocodingAPIService) =
-        GeocodingRepository(googleGeocodingAPIService)
+    fun providePlacesRepository(googlePlacesAPIService: GooglePlacesAPIService) =
+        PlacesRepository(googlePlacesAPIService)
 }

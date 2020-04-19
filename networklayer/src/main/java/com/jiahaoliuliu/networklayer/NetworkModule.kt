@@ -2,7 +2,7 @@ package com.jiahaoliuliu.networklayer
 
 import com.jiahaoliuliu.networklayer.direction.GoogleDirectionAPIService
 import com.jiahaoliuliu.networklayer.distance.GoogleDistanceMatrixAPIService
-import com.jiahaoliuliu.networklayer.geocoding.GoogleGeocodingAPIService
+import com.jiahaoliuliu.networklayer.places.GooglePlacesAPIService
 import dagger.Module
 import dagger.Provides
 import okhttp3.OkHttpClient
@@ -43,7 +43,7 @@ class NetworkModule {
     }
 
     @Provides
-    fun provideGoogleGeocodingApiService(): GoogleGeocodingAPIService {
-        return retrofit.create(GoogleGeocodingAPIService::class.java)
+    fun provideGooglePlacesApiService(): GooglePlacesAPIService {
+        return retrofit.create(GooglePlacesAPIService::class.java)
     }
 }

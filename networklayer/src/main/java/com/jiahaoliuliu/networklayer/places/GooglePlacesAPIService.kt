@@ -21,4 +21,16 @@ interface GooglePlacesAPIService {
                     @Query("address") address: String,
                     @Query("key") key: String = GOOGLE_API_KEY
     ): Single<String>
+
+    /**
+     * https://maps.googleapis.com/maps/api/place/autocomplete/json?
+     *  input=Amoeba&
+     *  language=en&
+     *  key=YOUR_KEY
+     */
+    @GET("https://maps.googleapis.com/maps/api/place/autocomplete/json")
+    fun getPredictions(@Query("language") language: String = LANGUAGE_EN,
+                    @Query("input") input: String,
+                    @Query("key") key: String = GOOGLE_API_KEY
+    ): Single<String>
 }
