@@ -22,7 +22,7 @@ import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
 
-abstract class BaseMapFragment: Fragment() {
+abstract class AbsBaseMapFragment: Fragment() {
 
     companion object {
         // offset from edges of the map - 20% of screen
@@ -30,17 +30,15 @@ abstract class BaseMapFragment: Fragment() {
     }
 
     @Inject lateinit var directionRepository: DirectionRepository
-    private var googleMap: GoogleMap? = null
+    protected var googleMap: GoogleMap? = null
 
-//    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-//        savedInstanceState: Bundle?): View? {
-//        return inflater.inflate(R.layout.fragment_origin, container, false)
-//    }
-//
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         MainApplication.getMainComponent()?.inject(this)
         val supportMapFragment = childFragmentManager.findFragmentById(R.id.maps) as SupportMapFragment
+        if (supportMapFragment == null) {
+            throw IllegalStateException("The extended fragment must have a maps in the layout")
+        }
         supportMapFragment.getMapAsync {
             googleMap = it
             onMapSynchronized()
