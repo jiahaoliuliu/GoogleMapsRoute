@@ -14,9 +14,10 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.jiahaoliuliu.datalayer.DirectionRepository
-import com.jiahaoliuliu.datalayer.DistanceRepository
+import com.jiahaoliuliu.datalayer.GeocodingRepository
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentDestinationBinding
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -30,8 +31,9 @@ class DestinationFragment: Fragment() {
         private const val TIME_DIFFERENCE_FOR_INPUT = 1000L
     }
 
-    @Inject lateinit var distanceRepository: DistanceRepository
-    @Inject lateinit var directionRepository: DirectionRepository
+//    @Inject lateinit var distanceRepository: DistanceRepository
+//    @Inject lateinit var directionRepository: DirectionRepository
+    @Inject lateinit var geocodingRepository: GeocodingRepository
     private lateinit var binding: FragmentDestinationBinding
     private var googleMap: GoogleMap? = null
     private var addressToBeFound: String? = null
@@ -51,6 +53,7 @@ class DestinationFragment: Fragment() {
             Timber.v("Map synchronized")
             googleMap = it
             showAirportLocation()
+            binding.addressInput.visibility = View.VISIBLE
         }
         binding.addressInput.addTextChangedListener(object: TextWatcher{
             override fun afterTextChanged(s: Editable?) {
@@ -58,16 +61,13 @@ class DestinationFragment: Fragment() {
                 userInputTimer?.cancel()
                 userInputTimer = object: CountDownTimer(TIME_DIFFERENCE_FOR_INPUT, TIME_DIFFERENCE_FOR_INPUT) {
                     override fun onFinish() {
-                        addressToBeFound?.let {
-                            Timber.v("Looking for $it")
-                        }
+                        findAddressAndShowIt()
                     }
 
                     override fun onTick(millisUntilFinished: Long) {
                         // DO nothing
                     }
                 }.start()
-
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -78,6 +78,16 @@ class DestinationFragment: Fragment() {
                 // Not do anything
             }
         })
+    }
+
+    private fun findAddressAndShowIt() {
+        addressToBeFound?.let {
+            geocodingRepository.retrieveLocation(it)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ location -> Timber.v("New location $location")
+                }, {throwable -> Timber.e(throwable, "Error finding the address")})
+        }
     }
 
     private fun showAirportLocation() {

@@ -2,6 +2,7 @@ package com.jiahaoliuliu.datalayer
 
 import com.jiahaoliuliu.networklayer.direction.GoogleDirectionAPIService
 import com.jiahaoliuliu.networklayer.distance.GoogleDistanceMatrixAPIService
+import com.jiahaoliuliu.networklayer.geocoding.GoogleGeocodingAPIService
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -13,15 +14,16 @@ class RepositoryModule {
     @Singleton
     fun provideDistanceRepository(
         googleDistanceMatrixAPIService: GoogleDistanceMatrixAPIService
-    ): DistanceRepository {
-        return DistanceRepository(googleDistanceMatrixAPIService)
-    }
+    )= DistanceRepository(googleDistanceMatrixAPIService)
 
     @Provides
     @Singleton
     fun provideDirectionRepository(
         googleDirectionAPIService: GoogleDirectionAPIService
-    ): DirectionRepository {
-        return DirectionRepository(googleDirectionAPIService)
-    }
+    ) = DirectionRepository(googleDirectionAPIService)
+
+    @Provides
+    @Singleton
+    fun provideGeocodingRepository(googleGeocodingAPIService: GoogleGeocodingAPIService) =
+        GeocodingRepository(googleGeocodingAPIService)
 }
