@@ -32,5 +32,5 @@ interface GooglePlacesAPIService {
     fun getPredictions(@Query("language") language: String = LANGUAGE_EN,
                     @Query("input") input: String,
                     @Query("key") key: String = GOOGLE_API_KEY
-    ): Single<String>
+    ): Single<AutoCompleteNetworkResponse>
 }
