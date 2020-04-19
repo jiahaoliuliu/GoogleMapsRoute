@@ -9,7 +9,8 @@ data class PlaceDetailsNetworkResponse(
     @SerializedName("html_attributions") val htmlAttributions: List<String>,
     val result: Result, val status: String)
 
-data class Result(@SerializedName("formatted_address") val formattedAddress: String,
-    val name: String, val geometry: Geometry)
+data class Result(@SerializedName("place_id") val placeId: String,
+    val name: String,  @SerializedName("formatted_address") val formattedAddress: String,
+    val geometry: Geometry)
 
 data class Geometry(val location: Coordinate, @SerializedName("viewport") val bounds: Bounds)

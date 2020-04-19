@@ -8,7 +8,7 @@ import retrofit2.http.Query
 interface GooglePlacesAPIService {
     companion object {
         private const val LANGUAGE_EN = "en"
-        private const val FIELDS = "formatted_address,name,geometry"
+        private const val FIELDS = "formatted_address,name,geometry,place_id"
     }
 
     /**
@@ -40,7 +40,7 @@ interface GooglePlacesAPIService {
      * placeid=ChIJ43gpdqJdXz4RZ_uEtyY5dHk&
      * key=YOUR_KEY&
      * Language=en&
-     * fields=formatted_address,name,geometry
+     * fields=formatted_address,name,geometry,place_id
      */
     @GET("https://maps.googleapis.com/maps/api/place/details/json")
     fun getPlaceDetails(@Query("language") language: String = LANGUAGE_EN,
