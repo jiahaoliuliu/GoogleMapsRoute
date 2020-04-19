@@ -1,6 +1,9 @@
 package com.jiahaoliuliu.googlemapsroute
 
 import android.os.Bundle
+import android.os.CountDownTimer
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +16,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.datalayer.DistanceRepository
+import com.jiahaoliuliu.googlemapsroute.databinding.FragmentDestinationBinding
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -23,15 +27,20 @@ class DestinationFragment: Fragment() {
         private const val DEFAULT_ZOOM = 15F
         // offset from edges of the map - 20% of screen
         private const val PERCENTAGE_PADDING = 20
+        private const val TIME_DIFFERENCE_FOR_INPUT = 1000L
     }
 
     @Inject lateinit var distanceRepository: DistanceRepository
     @Inject lateinit var directionRepository: DirectionRepository
+    private lateinit var binding: FragmentDestinationBinding
     private var googleMap: GoogleMap? = null
+    private var addressToBeFound: String? = null
+    private var userInputTimer: CountDownTimer? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_destination, container, false)
+        binding = FragmentDestinationBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -43,6 +52,32 @@ class DestinationFragment: Fragment() {
             googleMap = it
             showAirportLocation()
         }
+        binding.addressInput.addTextChangedListener(object: TextWatcher{
+            override fun afterTextChanged(s: Editable?) {
+                addressToBeFound = s.toString()
+                userInputTimer?.cancel()
+                userInputTimer = object: CountDownTimer(TIME_DIFFERENCE_FOR_INPUT, TIME_DIFFERENCE_FOR_INPUT) {
+                    override fun onFinish() {
+                        addressToBeFound?.let {
+                            Timber.v("Looking for $it")
+                        }
+                    }
+
+                    override fun onTick(millisUntilFinished: Long) {
+                        // DO nothing
+                    }
+                }.start()
+
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                // Not do anything
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                // Not do anything
+            }
+        })
     }
 
     private fun showAirportLocation() {
@@ -58,4 +93,5 @@ class DestinationFragment: Fragment() {
                     DEFAULT_ZOOM))
         }
     }
+
 }
