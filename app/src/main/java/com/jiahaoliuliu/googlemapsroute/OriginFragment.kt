@@ -29,7 +29,7 @@ import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
 
-class LocationFragment: Fragment() {
+class OriginFragment: Fragment() {
 
     companion object {
         private const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1000

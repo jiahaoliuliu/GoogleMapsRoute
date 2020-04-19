@@ -11,8 +11,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     // TODO: Pass the arguments
-    private val originFragment = LocationFragment()
-    private val destinationFragment = LocationFragment()
+    private val originFragment = OriginFragment()
+    private val destinationFragment = OriginFragment()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
