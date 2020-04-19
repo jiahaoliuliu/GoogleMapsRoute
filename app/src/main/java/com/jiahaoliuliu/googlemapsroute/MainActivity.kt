@@ -12,7 +12,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     // TODO: Pass the arguments
     private val originFragment = OriginFragment()
-    private val destinationFragment = OriginFragment()
+    private val destinationFragment = DestinationFragment()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

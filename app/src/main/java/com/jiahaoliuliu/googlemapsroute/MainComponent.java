@@ -12,4 +12,5 @@ import dagger.Component;
 @Singleton
 public interface MainComponent {
     void inject(OriginFragment originFragment);
+    void inject(DestinationFragment destinationFragment);
 }
