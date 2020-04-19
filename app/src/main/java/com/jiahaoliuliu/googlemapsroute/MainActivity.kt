@@ -7,12 +7,13 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.jiahaoliuliu.googlemapsroute.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SearchLocationListener {
 
     private lateinit var binding: ActivityMainBinding
     // TODO: Pass the arguments
     private val originFragment = OriginFragment()
     private val destinationFragment = DestinationFragment()
+    private var locationSearchFragment: LocationSearchFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,5 +49,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun showDestinationTab() {
         supportFragmentManager.beginTransaction().replace(R.id.container, destinationFragment).commit()
+    }
+
+    override fun onSearchLocationByAddressRequested(address: String) {
+        locationSearchFragment?.let {
+            it.updateAddress(address)
+            supportFragmentManager.beginTransaction().replace(R.id.container, it).commit()
+        } ?: run {
+            locationSearchFragment = LocationSearchFragment.newInstance(address)
+            supportFragmentManager.beginTransaction().replace(R.id.container, locationSearchFragment!!).commit()
+        }
     }
 }

@@ -1,9 +1,7 @@
 package com.jiahaoliuliu.googlemapsroute
 
+import android.content.Context
 import android.os.Bundle
-import android.os.CountDownTimer
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,12 +12,8 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.jiahaoliuliu.datalayer.GeocodingRepository
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentDestinationBinding
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
-import javax.inject.Inject
 
 class DestinationFragment: Fragment() {
 
@@ -31,13 +25,19 @@ class DestinationFragment: Fragment() {
         private const val TIME_DIFFERENCE_FOR_INPUT = 1000L
     }
 
-//    @Inject lateinit var distanceRepository: DistanceRepository
 //    @Inject lateinit var directionRepository: DirectionRepository
-    @Inject lateinit var geocodingRepository: GeocodingRepository
     private lateinit var binding: FragmentDestinationBinding
     private var googleMap: GoogleMap? = null
-    private var addressToBeFound: String? = null
-    private var userInputTimer: CountDownTimer? = null
+    private lateinit var onSearchLocationListener: SearchLocationListener
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is SearchLocationListener) {
+            onSearchLocationListener = context
+        } else {
+            throw ClassCastException("The parent activity must implement SearchLocationListener")
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
@@ -55,39 +55,8 @@ class DestinationFragment: Fragment() {
             showAirportLocation()
             binding.addressInput.visibility = View.VISIBLE
         }
-        binding.addressInput.addTextChangedListener(object: TextWatcher{
-            override fun afterTextChanged(s: Editable?) {
-                addressToBeFound = s.toString()
-                userInputTimer?.cancel()
-                userInputTimer = object: CountDownTimer(TIME_DIFFERENCE_FOR_INPUT, TIME_DIFFERENCE_FOR_INPUT) {
-                    override fun onFinish() {
-                        findAddressAndShowIt()
-                    }
-
-                    override fun onTick(millisUntilFinished: Long) {
-                        // DO nothing
-                    }
-                }.start()
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                // Not do anything
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // Not do anything
-            }
-        })
-    }
-
-    private fun findAddressAndShowIt() {
-        addressToBeFound?.let {
-            geocodingRepository.retrieveLocation(it)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ location -> Timber.v("New location $location")
-                }, {throwable -> Timber.e(throwable, "Error finding the address")})
-        }
+        binding.addressInput.setOnClickListener {
+            onSearchLocationListener?.onSearchLocationByAddressRequested(binding.addressInput.text.toString()) }
     }
 
     private fun showAirportLocation() {
@@ -103,5 +72,9 @@ class DestinationFragment: Fragment() {
                     DEFAULT_ZOOM))
         }
     }
+}
 
+interface SearchLocationListener {
+
+    fun onSearchLocationByAddressRequested(address: String)
 }
