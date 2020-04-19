@@ -1,5 +1,6 @@
 package com.jiahaoliuliu.googlemapsroute
 
+import android.app.Activity
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.text.Editable
@@ -7,6 +8,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import com.jiahaoliuliu.datalayer.PlacesRepository
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentLocationSearchBinding
@@ -14,6 +16,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import javax.inject.Inject
+
 
 class LocationSearchFragment: Fragment(), OnPlaceClickListener {
 
@@ -94,6 +97,9 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ placesList ->
                     locationListAdapter.updatePlacesList(placesList)
+                    val imm: InputMethodManager =
+                        activity!!.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(binding.addressInput.windowToken, 0)
                 }, {throwable -> Timber.e(throwable, "Error finding the address")})
         }
     }
