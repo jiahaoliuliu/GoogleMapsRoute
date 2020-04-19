@@ -82,6 +82,10 @@ class LocationSearchFragment: Fragment() {
 
     private fun findAddress() {
         addressToBeFound?.let {
+            if (addressToBeFound.isNullOrEmpty()) {
+                return
+            }
+
             geocodingRepository.retrieveLocation(it)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
