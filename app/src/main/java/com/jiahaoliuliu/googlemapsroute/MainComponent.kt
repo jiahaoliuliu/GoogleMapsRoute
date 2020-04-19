@@ -8,7 +8,8 @@ import javax.inject.Singleton
 @Component(modules = [ApplicationModule::class, RepositoryModule::class, NetworkModule::class])
 @Singleton
 interface MainComponent {
-    fun inject(originFragment: OriginFragment?)
-    fun inject(destinationFragment: DestinationFragment?)
-    fun inject(locationSearchFragment: LocationSearchFragment?)
+    fun inject(baseMapFragment: BaseMapFragment)
+    fun inject(originFragment: OriginFragment)
+    fun inject(destinationFragment: DestinationFragment)
+    fun inject(locationSearchFragment: LocationSearchFragment)
 }
