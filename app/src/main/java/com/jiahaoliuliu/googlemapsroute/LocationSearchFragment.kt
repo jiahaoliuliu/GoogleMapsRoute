@@ -108,9 +108,11 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ placesList ->
                     locationListAdapter.updatePlacesList(placesList)
-                    val imm: InputMethodManager =
-                        activity!!.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(binding.addressInput.windowToken, 0)
+                    activity?.let {fragmentActivity ->
+                        val imm: InputMethodManager =
+                            fragmentActivity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+                        imm.hideSoftInputFromWindow(binding.addressInput.windowToken, 0)
+                    }
                 }, {throwable -> Timber.e(throwable, "Error finding the address")})
         }
     }

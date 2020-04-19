@@ -24,5 +24,8 @@ class PlacesRepository(private val googlePlacesAPIService: GooglePlacesAPIServic
 
     fun retrievePlaceDetails(placeId: String): Single<String> {
         return googlePlacesAPIService.getPlaceDetails(placeId = placeId)
+            .map{
+                placeDetailsNetworkResponse -> placeDetailsNetworkResponse.toString()
+            }
     }
 }

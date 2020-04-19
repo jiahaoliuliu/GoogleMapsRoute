@@ -32,14 +32,14 @@ class DirectionRepository(private val googleDirectionAPIService: GoogleDirection
             route.polyline.points)
     }
 
-    private fun mapNetworkBoundsToInternalBounds(bounds: com.jiahaoliuliu.networklayer.direction.Bounds): Bounds {
+    private fun mapNetworkBoundsToInternalBounds(bounds: com.jiahaoliuliu.networklayer.model.Bounds): Bounds {
         return Bounds(
             mapNetworkCoordinateToInternalCoordinate(bounds.northeast),
             mapNetworkCoordinateToInternalCoordinate(bounds.southwest))
     }
 
     private fun mapNetworkCoordinateToInternalCoordinate(
-        coordinate: com.jiahaoliuliu.networklayer.direction.Coordinate): Coordinate {
+        coordinate: com.jiahaoliuliu.networklayer.model.Coordinate): Coordinate {
         return Coordinate(coordinate.latitude, coordinate.longitude)
     }
 

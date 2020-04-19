@@ -47,5 +47,5 @@ interface GooglePlacesAPIService {
                         @Query("placeid") placeId: String,
                         @Query("key") key: String = GOOGLE_API_KEY,
                         @Query("fields") fields: String = FIELDS
-    ): Single<String>
+    ): Single<PlaceDetailsNetworkResponse>
 }
