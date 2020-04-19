@@ -12,8 +12,14 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.jiahaoliuliu.datalayer.DirectionRepository
+import com.jiahaoliuliu.datalayer.PlacesRepository
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentDestinationBinding
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
+import javax.inject.Inject
 
 class DestinationFragment: Fragment() {
 
@@ -25,10 +31,13 @@ class DestinationFragment: Fragment() {
         private const val TIME_DIFFERENCE_FOR_INPUT = 1000L
     }
 
-//    @Inject lateinit var directionRepository: DirectionRepository
+    @Inject
+    lateinit var directionRepository: DirectionRepository
+    @Inject lateinit var placesRepository: PlacesRepository
     private lateinit var binding: FragmentDestinationBinding
     private var googleMap: GoogleMap? = null
     private lateinit var onSearchLocationListener: SearchLocationListener
+    private val compositeDisposable = CompositeDisposable()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -74,7 +83,15 @@ class DestinationFragment: Fragment() {
     }
 
     fun showRouteToLocation(placeId: String) {
-        Timber.v("The place to be shown is $placeId")
+        val disposable = placesRepository.retrievePlaceDetails(placeId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ placeDetails ->
+                Timber.v("Place details $placeDetails")
+            }, { throwable -> Timber.e(throwable, "Error retrieving place details") }
+            )
+        // TODO dispose this
+        compositeDisposable.add(disposable)
     }
 }
 

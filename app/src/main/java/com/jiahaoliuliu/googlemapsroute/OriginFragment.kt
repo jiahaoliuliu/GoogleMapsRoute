@@ -176,6 +176,7 @@ class OriginFragment: Fragment() {
                     view.text = "${direction.duration}(${direction.distance})"
                     val bmp = loadBitmapFromView(view)
                     val midPoint = getMidPoint(positions)
+
                     googleMap?.addMarker(MarkerOptions()
                         .position(midPoint)
                         .anchor(0.5f, 0.5f)
