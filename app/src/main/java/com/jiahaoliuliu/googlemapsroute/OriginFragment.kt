@@ -137,7 +137,7 @@ class OriginFragment: AbsBaseMapFragment() {
             googleMapNotNull.uiSettings.isMyLocationButtonEnabled = false
         }
 
-        binding.addressInput.visibility = View.VISIBLE
+        binding.searchLayout.visibility = View.VISIBLE
     }
 
     private fun updateLocationUI() {
