@@ -10,7 +10,6 @@ import com.jiahaoliuliu.googlemapsroute.databinding.ActivityMainBinding
 class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoundListener {
 
     private lateinit var binding: ActivityMainBinding
-    // TODO: Pass the arguments
     private val originFragment = OriginFragment()
     private val destinationFragment = DestinationFragment()
     private var locationSearchFragment: LocationSearchFragment? = null
@@ -53,7 +52,6 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
 
     override fun onSearchLocationByAddressRequested(address: String) {
         locationSearchFragment?.let {
-            it.updateAddress(address)
             supportFragmentManager.beginTransaction().replace(R.id.container, it).commit()
         } ?: run {
             locationSearchFragment = LocationSearchFragment.newInstance(address)
