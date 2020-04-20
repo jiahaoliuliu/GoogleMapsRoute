@@ -90,15 +90,18 @@ class DestinationFragment: AbsBaseMapFragment() {
     }
 
     private fun showFullRoute() {
-        directionRepository.lastKnownLocation?.let {lastKownLocationNotNull ->
-            finalDestination?.let {
-                drawRouteBetweenOriginAndDestination(lastKownLocationNotNull, DirectionRepository.DXB_AIRPORT_LOCATION)
+        directionRepository.lastKnownLocation?.let {lastKnownLocationNotNull ->
+            finalDestination?.let {finalDestinationNotNull ->
+                drawRouteBetweenOriginAndDestination(lastKnownLocationNotNull, DirectionRepository.DXB_AIRPORT_LOCATION, boundMapToLocations = false)
 
                 // Draw a line between the Dubai airport and Bali airport
                 googleMap?.addPolyline(
                     PolylineOptions()
                         .color(ContextCompat.getColor(context!!, R.color.colorRoute))
                         .add(DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng(), DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng()))
+
+                boundMapToLocations(lastKnownLocationNotNull.toLatLng(), DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng(),
+                    DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng(), finalDestinationNotNull.location.toLatLng())
             }
         }
     }

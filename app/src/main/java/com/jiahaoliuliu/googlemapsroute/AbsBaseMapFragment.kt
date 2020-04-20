@@ -47,7 +47,7 @@ abstract class AbsBaseMapFragment: Fragment() {
 
     abstract fun onMapSynchronized()
 
-    protected fun drawRouteBetweenOriginAndDestination(origin: Coordinate, destination: Coordinate) {
+    protected fun drawRouteBetweenOriginAndDestination(origin: Coordinate, destination: Coordinate, boundMapToLocations: Boolean = true) {
         val disposable = directionRepository.calculateDirection(origin, destination)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -71,18 +71,24 @@ abstract class AbsBaseMapFragment: Fragment() {
                 )
 
                 // Move the camera
-                val width = resources.displayMetrics.widthPixels;
-                val height = resources.displayMetrics.heightPixels;
-                val padding = (width * PERCENTAGE_PADDING/100)
-
-                val bounds = LatLngBounds.builder()
-                    .include(direction.bounds.northeast.toLatLng())
-                    .include(direction.bounds.southwest.toLatLng())
-                    .build()
-                googleMap?.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding))
+                if (boundMapToLocations) {
+                    boundMapToLocations(direction.bounds.northeast.toLatLng(), direction.bounds.southwest.toLatLng())
+                }
             },
                 {throwable -> Timber.e(throwable, "Error getting the direction")}
             )
+    }
+
+    fun boundMapToLocations(vararg locations: LatLng) {
+        val width = resources.displayMetrics.widthPixels;
+        val height = resources.displayMetrics.heightPixels;
+        val padding = (width * PERCENTAGE_PADDING / 100)
+
+        val boundsBuilder = LatLngBounds.builder()
+        locations.iterator().forEach { boundsBuilder.include(it) }
+        googleMap?.animateCamera(
+            CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), width, height, padding)
+        )
     }
 
     private fun loadBitmapFromView(v: View): Bitmap {
