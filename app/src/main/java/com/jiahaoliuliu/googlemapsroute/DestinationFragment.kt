@@ -5,12 +5,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
+import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.datalayer.PlacesRepository
-import com.jiahaoliuliu.entity.Coordinate
+import com.jiahaoliuliu.entity.PlaceDetails
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentDestinationBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -21,7 +23,6 @@ import javax.inject.Inject
 class DestinationFragment: AbsBaseMapFragment() {
 
     companion object {
-        private val BALI_AIRPORT_LOCATION = LatLng(-8.744000, 115.174858)
         private const val DEFAULT_ZOOM = 15F
     }
 
@@ -29,6 +30,7 @@ class DestinationFragment: AbsBaseMapFragment() {
     private lateinit var binding: FragmentDestinationBinding
     private lateinit var onSearchLocationListener: SearchLocationListener
     private val compositeDisposable = CompositeDisposable()
+    private var finalDestination: PlaceDetails? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -49,6 +51,7 @@ class DestinationFragment: AbsBaseMapFragment() {
         MainApplication.getMainComponent()?.inject(this)
         binding.addressInput.setOnClickListener {
             onSearchLocationListener.onSearchLocationByAddressRequested(binding.addressInput.text.toString()) }
+        binding.showFullRouteButton.setOnClickListener{showFullRoute()}
         super.onActivityCreated(savedInstanceState)
     }
 
@@ -60,14 +63,13 @@ class DestinationFragment: AbsBaseMapFragment() {
     private fun showAirportLocation() {
         googleMap?.let {googleMapNotNull ->
             val markerOptions = MarkerOptions()
-            markerOptions.position(BALI_AIRPORT_LOCATION)
+            markerOptions.position(DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng())
             markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
             googleMapNotNull.addMarker(markerOptions)
 
             googleMapNotNull.moveCamera(
                 CameraUpdateFactory.newLatLngZoom(
-                    LatLng(BALI_AIRPORT_LOCATION.latitude, BALI_AIRPORT_LOCATION.longitude),
-                    DEFAULT_ZOOM))
+                    DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng(), DEFAULT_ZOOM))
         }
     }
 
@@ -76,14 +78,40 @@ class DestinationFragment: AbsBaseMapFragment() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ placeDetails ->
+                finalDestination = placeDetails
                 binding.addressInput.text = placeDetails.name
                 drawRouteBetweenOriginAndDestination(
-                    Coordinate(BALI_AIRPORT_LOCATION.latitude, BALI_AIRPORT_LOCATION.longitude),
-                    placeDetails.location
+                    DirectionRepository.BALI_AIRPORT_LOCATION, placeDetails.location
                 )
+
+                binding.showFullRouteButton.visibility = View.VISIBLE
             }, { throwable -> Timber.e(throwable, "Error retrieving place details") })
-        // TODO dispose this
         compositeDisposable.add(disposable)
+    }
+
+    private fun showFullRoute() {
+        directionRepository.lastKnownLocation?.let {lastKnownLocationNotNull ->
+            finalDestination?.let {finalDestinationNotNull ->
+                drawRouteBetweenOriginAndDestination(lastKnownLocationNotNull, DirectionRepository.DXB_AIRPORT_LOCATION, boundMapToLocations = false)
+
+                // Draw a line between the Dubai airport and Bali airport
+                googleMap?.addPolyline(
+                    PolylineOptions()
+                        .color(ContextCompat.getColor(context!!, R.color.colorRoute))
+                        .add(DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng(), DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng()))
+
+                boundMapToLocations(lastKnownLocationNotNull.toLatLng(), DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng(),
+                    DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng(), finalDestinationNotNull.location.toLatLng())
+
+                // Show time
+                addMarkerBetweenLocations("15h 40mins", arrayListOf(DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng(), DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng()))
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        compositeDisposable.clear()
+        super.onDestroy()
     }
 }
 

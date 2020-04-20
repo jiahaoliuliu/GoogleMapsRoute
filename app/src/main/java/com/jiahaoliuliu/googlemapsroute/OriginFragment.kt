@@ -14,6 +14,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.entity.Coordinate
 import timber.log.Timber
 
@@ -22,13 +23,12 @@ class OriginFragment: AbsBaseMapFragment() {
     companion object {
         private const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1000
         private val DEFAULT_LOCATION = LatLng(25.276, 55.296)
-        private val DXB_AIRPORT_LOCATION = LatLng(25.253176, 55.365673)
         private const val DEFAULT_ZOOM = 15F
     }
 
     private var locationPermissionGranted = false
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    private var lastKnownLocation: Location? = null
+    private var lastKnownLocation: Coordinate? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
@@ -83,16 +83,11 @@ class OriginFragment: AbsBaseMapFragment() {
         googleMap?.let {googleMapNotNull ->
             lastKnownLocation?.let { lastKnownLocationNotNull ->
                 googleMapNotNull.moveCamera(
-                    CameraUpdateFactory.newLatLngZoom(
-                        LatLng(lastKnownLocationNotNull.latitude, lastKnownLocationNotNull.longitude),
-                        DEFAULT_ZOOM))
+                    CameraUpdateFactory.newLatLngZoom(lastKnownLocationNotNull.toLatLng(), DEFAULT_ZOOM))
             } ?: run {
                 // if the permission is not guaranteed, then use the default location
                 googleMapNotNull.moveCamera(
-                    CameraUpdateFactory.newLatLngZoom(
-                        DEFAULT_LOCATION,
-                        DEFAULT_ZOOM
-                    )
+                    CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM)
                 )
             }
             googleMapNotNull.uiSettings.isMyLocationButtonEnabled = false
@@ -118,7 +113,8 @@ class OriginFragment: AbsBaseMapFragment() {
             val locationResult = fusedLocationProviderClient.lastLocation
             locationResult.addOnCompleteListener { task ->
                 if (task.isSuccessful && task.result != null) {
-                    lastKnownLocation = task.result
+                    lastKnownLocation = (task.result as Location).toCoordinate()
+                    directionRepository.lastKnownLocation = lastKnownLocation
                     setMarkerToLastKnownLocation(it)
                     drawDistanceToTheAirport()
                 } else {
@@ -133,20 +129,18 @@ class OriginFragment: AbsBaseMapFragment() {
 
     private fun drawDistanceToTheAirport() {
         lastKnownLocation?.let {
-        drawRouteBetweenOriginAndDestination(
-            Coordinate(it.latitude, it.longitude),
-            Coordinate(DXB_AIRPORT_LOCATION.latitude, DXB_AIRPORT_LOCATION.longitude))
+            drawRouteBetweenOriginAndDestination(it, DirectionRepository.DXB_AIRPORT_LOCATION)
         }
     }
 
     private fun setMarkerToLastKnownLocation(googleMap: GoogleMap) {
-        val lastKnownLocationLatLng =
-            LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastKnownLocationLatLng, DEFAULT_ZOOM))
+        lastKnownLocation?.let{
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(it.toLatLng(), DEFAULT_ZOOM))
 
-        val markerOptions = MarkerOptions()
-        markerOptions.position(lastKnownLocationLatLng)
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-        googleMap.addMarker(markerOptions)
+            val markerOptions = MarkerOptions()
+            markerOptions.position(it.toLatLng())
+            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+            googleMap.addMarker(markerOptions)
+        }
     }
 }

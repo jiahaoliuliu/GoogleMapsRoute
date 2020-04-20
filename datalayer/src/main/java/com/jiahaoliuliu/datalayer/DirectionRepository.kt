@@ -11,7 +11,11 @@ class DirectionRepository(private val googleDirectionAPIService: GoogleDirection
 
     companion object {
         private const val COORDINATOR_SEPARATOR = ","
+        val DXB_AIRPORT_LOCATION = Coordinate(25.253176, 55.365673)
+        val BALI_AIRPORT_LOCATION = Coordinate(-8.744000, 115.174858)
     }
+
+    var lastKnownLocation: Coordinate? = null
 
     fun calculateDirection(origin: Coordinate, destination: Coordinate): Single<Direction> {
         return googleDirectionAPIService.getDirection(
@@ -42,5 +46,4 @@ class DirectionRepository(private val googleDirectionAPIService: GoogleDirection
         coordinate: com.jiahaoliuliu.networklayer.model.Coordinate): Coordinate {
         return Coordinate(coordinate.latitude, coordinate.longitude)
     }
-
 }

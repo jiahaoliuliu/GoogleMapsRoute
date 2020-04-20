@@ -92,8 +92,8 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
             }
         })
 
-        addressToBeFound?.let {
-            updateAddress(it)
+        if (!addressToBeFound.isNullOrEmpty()) {
+            binding.addressInput.setText(addressToBeFound)
         }
     }
 
@@ -115,10 +115,6 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
                     }
                 }, {throwable -> Timber.e(throwable, "Error finding the address")})
         }
-    }
-
-    fun updateAddress(address: String) {
-        binding.addressInput.setText(address)
     }
 
     override fun onPlaceClicked(id: String) {

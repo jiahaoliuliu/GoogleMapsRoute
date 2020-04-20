@@ -47,7 +47,7 @@ abstract class AbsBaseMapFragment: Fragment() {
 
     abstract fun onMapSynchronized()
 
-    protected fun drawRouteBetweenOriginAndDestination(origin: Coordinate, destination: Coordinate) {
+    protected fun drawRouteBetweenOriginAndDestination(origin: Coordinate, destination: Coordinate, boundMapToLocations: Boolean = true) {
         val disposable = directionRepository.calculateDirection(origin, destination)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -59,30 +59,41 @@ abstract class AbsBaseMapFragment: Fragment() {
                         .color(ContextCompat.getColor(context!!, R.color.colorRoute))
                     .addAll(positions))
                 // Add the marker
-                val view = activity?.layoutInflater?.inflate(R.layout.direction_marker, null, false) as TextView
-                view.text = "${direction.duration}(${direction.distance})"
-                val bmp = loadBitmapFromView(view)
-                val midPoint = getMidPoint(positions)
-
-                googleMap?.addMarker(MarkerOptions()
-                    .position(midPoint)
-                    .anchor(0.5f, 0.5f)
-                    .icon(BitmapDescriptorFactory.fromBitmap(bmp))
-                )
+                addMarkerBetweenLocations("${direction.duration}(${direction.distance})", positions)
 
                 // Move the camera
-                val width = resources.displayMetrics.widthPixels;
-                val height = resources.displayMetrics.heightPixels;
-                val padding = (width * PERCENTAGE_PADDING/100)
-
-                val bounds = LatLngBounds.builder()
-                    .include(LatLng(direction.bounds.northeast.latitude, direction.bounds.northeast.longitude))
-                    .include(LatLng(direction.bounds.southwest.latitude, direction.bounds.southwest.longitude))
-                    .build()
-                googleMap?.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding))
+                if (boundMapToLocations) {
+                    boundMapToLocations(direction.bounds.northeast.toLatLng(), direction.bounds.southwest.toLatLng())
+                }
             },
                 {throwable -> Timber.e(throwable, "Error getting the direction")}
             )
+    }
+
+    fun boundMapToLocations(vararg locations: LatLng) {
+        val width = resources.displayMetrics.widthPixels;
+        val height = resources.displayMetrics.heightPixels;
+        val padding = (width * PERCENTAGE_PADDING / 100)
+
+        val boundsBuilder = LatLngBounds.builder()
+        locations.iterator().forEach { boundsBuilder.include(it) }
+        googleMap?.animateCamera(
+            CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), width, height, padding)
+        )
+    }
+
+    fun addMarkerBetweenLocations(text: String, locations: List<LatLng> ) {
+        val view = activity?.layoutInflater?.inflate(R.layout.direction_marker, null, false) as TextView
+        view.text = text
+        val bmp = loadBitmapFromView(view)
+        val midPoint = getMidPoint(locations)
+
+        googleMap?.addMarker(
+            MarkerOptions()
+                .position(midPoint)
+                .anchor(0.5f, 0.5f)
+                .icon(BitmapDescriptorFactory.fromBitmap(bmp))
+        )
     }
 
     private fun loadBitmapFromView(v: View): Bitmap {
