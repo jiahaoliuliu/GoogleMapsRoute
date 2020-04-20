@@ -1,5 +1,6 @@
 package com.jiahaoliuliu.googlemapsroute
 
+import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
@@ -16,6 +17,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.entity.Coordinate
+import com.jiahaoliuliu.googlemapsroute.databinding.FragmentOriginBinding
 import timber.log.Timber
 
 class OriginFragment: AbsBaseMapFragment() {
@@ -26,17 +28,31 @@ class OriginFragment: AbsBaseMapFragment() {
         private const val DEFAULT_ZOOM = 15F
     }
 
+    private lateinit var binding: FragmentOriginBinding
+    private lateinit var onSearchLocationListener: SearchLocationListener
     private var locationPermissionGranted = false
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private var lastKnownLocation: Coordinate? = null
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is SearchLocationListener) {
+            onSearchLocationListener = context
+        } else {
+            throw ClassCastException("The parent activity must implement SearchLocationListener")
+        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_origin, container, false)
+        binding = FragmentOriginBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         MainApplication.getMainComponent()?.inject(this)
+        binding.addressInput.setOnClickListener {
+            onSearchLocationListener.onSearchLocationByAddressRequested(binding.addressInput.text.toString()) }
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity!!)
         // The super class will try to find the map and synchronize it
         super.onActivityCreated(savedInstanceState)
@@ -92,6 +108,8 @@ class OriginFragment: AbsBaseMapFragment() {
             }
             googleMapNotNull.uiSettings.isMyLocationButtonEnabled = false
         }
+
+        binding.addressInput.visibility = View.VISIBLE
     }
 
     private fun updateLocationUI() {
