@@ -37,6 +37,7 @@ class OriginFragment: AbsBaseMapFragment() {
     @Inject lateinit var placesRepository: PlacesRepository
     private lateinit var binding: FragmentOriginBinding
     private lateinit var onSearchLocationListener: SearchLocationListener
+    private var isLocationPermissionAlreadyAskedToUser = false
     private var locationPermissionGranted = false
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private var initialLocation: Coordinate? = null
@@ -67,7 +68,10 @@ class OriginFragment: AbsBaseMapFragment() {
     }
 
     override fun onMapSynchronized() {
-        getLocationPermission()
+        if (!isLocationPermissionAlreadyAskedToUser) {
+            isLocationPermissionAlreadyAskedToUser = true
+            getLocationPermission()
+        }
     }
 
     private fun getLocationPermission() {
