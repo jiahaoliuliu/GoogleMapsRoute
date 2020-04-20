@@ -21,13 +21,19 @@ import javax.inject.Inject
 
 class LocationSearchFragment: Fragment(), OnPlaceClickListener {
 
+    enum class Caller {
+        ORIGIN, DESTINATION
+    }
+
     companion object {
         private const val TIME_DIFFERENCE_FOR_INPUT = 1000L
         private const val ARGUMENT_KEY_ADDRESS = "Address"
+        private const val ARGUMENT_KEY_CALLER = "Caller"
 
-        fun newInstance(address: String): LocationSearchFragment {
+        fun newInstance(address: String, caller: Caller): LocationSearchFragment {
             val bundle = Bundle()
             bundle.putString(ARGUMENT_KEY_ADDRESS, address)
+            bundle.putString(ARGUMENT_KEY_CALLER, caller.toString())
             val locationSearchFragment = LocationSearchFragment()
             locationSearchFragment.arguments = bundle
             return locationSearchFragment
@@ -37,6 +43,7 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
     @Inject lateinit var placesRepository: PlacesRepository
     private lateinit var binding: FragmentLocationSearchBinding
     private var addressToBeFound: String? = null
+    private var caller: Caller = Caller.ORIGIN
     private var userInputTimer: CountDownTimer? = null
     private lateinit var locationListAdapter: LocationsListAdapter
     private lateinit var onLocationFoundListener: OnLocationFoundListener
@@ -54,6 +61,7 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
         super.onCreate(savedInstanceState)
         arguments?.let {
             addressToBeFound = it.getString(ARGUMENT_KEY_ADDRESS)
+            caller = Caller.valueOf(it.getString(ARGUMENT_KEY_CALLER)!!)
         }
     }
 
@@ -92,7 +100,7 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
             }
         })
 
-        if (!addressToBeFound.isNullOrEmpty()) {
+        addressToBeFound?.let {
             binding.addressInput.setText(addressToBeFound)
         }
     }
@@ -118,11 +126,11 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
     }
 
     override fun onPlaceClicked(id: String) {
-        onLocationFoundListener.onLocationFound(id)
+        onLocationFoundListener.onLocationFound(id, caller)
     }
 }
 
 interface OnLocationFoundListener {
 
-    fun onLocationFound(id: String)
+    fun onLocationFound(id: String, caller: LocationSearchFragment.Caller)
 }
