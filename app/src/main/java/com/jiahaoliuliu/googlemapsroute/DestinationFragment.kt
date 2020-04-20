@@ -102,6 +102,9 @@ class DestinationFragment: AbsBaseMapFragment() {
 
                 boundMapToLocations(lastKnownLocationNotNull.toLatLng(), DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng(),
                     DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng(), finalDestinationNotNull.location.toLatLng())
+
+                // Show time
+                addMarkerBetweenLocations("15h 40mins", arrayListOf(DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng(), DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng()))
             }
         }
     }
