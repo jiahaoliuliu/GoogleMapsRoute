@@ -1,6 +1,8 @@
 package com.jiahaoliuliu.networklayer.direction
 
 import com.google.gson.annotations.SerializedName
+import com.jiahaoliuliu.networklayer.model.Bounds
+import com.jiahaoliuliu.networklayer.model.Coordinate
 
 //{
 //    "geocoded_waypoints": [
@@ -336,11 +338,6 @@ data class Route(
     val summary: String
 )
 
-data class Bounds (
-    val northeast: Coordinate,
-    val southwest: Coordinate
-)
-
 data class Leg (
     val distance: TextValue,
     val duration: TextValue,
@@ -373,7 +370,3 @@ data class Step(
 )
 
 data class Polyline(val points: String)
-
-data class Coordinate(
-    @SerializedName("lat")val latitude: Double,
-    @SerializedName("lng")val longitude: Double)

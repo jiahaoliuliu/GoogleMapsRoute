@@ -3,30 +3,66 @@ package com.jiahaoliuliu.googlemapsroute
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.Marker
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.jiahaoliuliu.googlemapsroute.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener {
+class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoundListener {
 
     private lateinit var binding: ActivityMainBinding
+    // TODO: Pass the arguments
+    private val originFragment = OriginFragment()
+    private val destinationFragment = DestinationFragment()
+    private var locationSearchFragment: LocationSearchFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolbar)
-        val locationFragment = LocationFragment()
-        locationFragment.setOnMarkerClickListener(this)
-        supportFragmentManager.beginTransaction().add(R.id.container, locationFragment).commit()
+        setUpTabs()
     }
 
-    override fun onMarkerClick(marker: Marker?): Boolean {
-//        val damagesFragment = DamagesFragment()
-//        supportFragmentManager
-//            .beginTransaction()
-//            .replace(R.id.container, damagesFragment)
-//            .addToBackStack("DamagesFragment")
-//            .commit()
-        return true
+    private fun setUpTabs() {
+        val originTab = binding.locationTabs.newTab().setText("To Dubai airport")
+        binding.locationTabs.addTab(originTab)
+        val destinationTab = binding.locationTabs.newTab().setText("Final destination")
+        binding.locationTabs.addTab(destinationTab)
+        binding.locationTabs.tabGravity = TabLayout.GRAVITY_FILL
+        binding.locationTabs.addOnTabSelectedListener(object: OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                if (tab == originTab) {
+                    showOriginScreen()
+                } else {
+                    showDestinationScreen()
+                }
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab) {}
+            override fun onTabReselected(tab: TabLayout.Tab) {}
+        })
+        showOriginScreen()
+    }
+
+    private fun showOriginScreen() {
+        supportFragmentManager.beginTransaction().replace(R.id.container, originFragment).commit()
+    }
+
+    private fun showDestinationScreen() {
+        supportFragmentManager.beginTransaction().replace(R.id.container, destinationFragment).commit()
+    }
+
+    override fun onSearchLocationByAddressRequested(address: String) {
+        locationSearchFragment?.let {
+            it.updateAddress(address)
+            supportFragmentManager.beginTransaction().replace(R.id.container, it).commit()
+        } ?: run {
+            locationSearchFragment = LocationSearchFragment.newInstance(address)
+            supportFragmentManager.beginTransaction().replace(R.id.container, locationSearchFragment!!).commit()
+        }
+    }
+
+    override fun onLocationFound(id: String) {
+        destinationFragment.showRouteToLocation(id)
+        showDestinationScreen()
     }
 }
