@@ -14,6 +14,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.entity.Coordinate
 import timber.log.Timber
 
@@ -22,7 +23,6 @@ class OriginFragment: AbsBaseMapFragment() {
     companion object {
         private const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1000
         private val DEFAULT_LOCATION = LatLng(25.276, 55.296)
-        private val DXB_AIRPORT_LOCATION = LatLng(25.253176, 55.365673)
         private const val DEFAULT_ZOOM = 15F
     }
 
@@ -114,6 +114,7 @@ class OriginFragment: AbsBaseMapFragment() {
             locationResult.addOnCompleteListener { task ->
                 if (task.isSuccessful && task.result != null) {
                     lastKnownLocation = (task.result as Location).toCoordinate()
+                    directionRepository.lastKnownLocation = lastKnownLocation
                     setMarkerToLastKnownLocation(it)
                     drawDistanceToTheAirport()
                 } else {
@@ -128,7 +129,7 @@ class OriginFragment: AbsBaseMapFragment() {
 
     private fun drawDistanceToTheAirport() {
         lastKnownLocation?.let {
-            drawRouteBetweenOriginAndDestination(it, DXB_AIRPORT_LOCATION.toCoordinate())
+            drawRouteBetweenOriginAndDestination(it, DirectionRepository.DXB_AIRPORT_LOCATION)
         }
     }
 
