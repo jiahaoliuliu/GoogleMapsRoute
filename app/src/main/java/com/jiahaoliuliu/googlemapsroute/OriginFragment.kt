@@ -11,14 +11,19 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.jiahaoliuliu.datalayer.DirectionRepository
+import com.jiahaoliuliu.datalayer.PlacesRepository
 import com.jiahaoliuliu.entity.Coordinate
+import com.jiahaoliuliu.googlemapsroute.LocationSearchFragment.Caller
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentOriginBinding
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
+import javax.inject.Inject
 
 class OriginFragment: AbsBaseMapFragment() {
 
@@ -26,13 +31,15 @@ class OriginFragment: AbsBaseMapFragment() {
         private const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1000
         private val DEFAULT_LOCATION = LatLng(25.276, 55.296)
         private const val DEFAULT_ZOOM = 15F
+        private val compositeDisposable = CompositeDisposable()
     }
 
+    @Inject lateinit var placesRepository: PlacesRepository
     private lateinit var binding: FragmentOriginBinding
     private lateinit var onSearchLocationListener: SearchLocationListener
     private var locationPermissionGranted = false
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    private var lastKnownLocation: Coordinate? = null
+    private var initialLocation: Coordinate? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -52,7 +59,8 @@ class OriginFragment: AbsBaseMapFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         MainApplication.getMainComponent()?.inject(this)
         binding.addressInput.setOnClickListener {
-            onSearchLocationListener.onSearchLocationByAddressRequested(binding.addressInput.text.toString()) }
+            onSearchLocationListener.onSearchLocationByAddressRequested(
+                binding.addressInput.text.toString(), Caller.ORIGIN) }
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity!!)
         // The super class will try to find the map and synchronize it
         super.onActivityCreated(savedInstanceState)
@@ -87,6 +95,22 @@ class OriginFragment: AbsBaseMapFragment() {
         }
     }
 
+    fun showRouteFromLocation(placeId: String) {
+        val disposable = placesRepository.retrievePlaceDetails(placeId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ placeDetails ->
+                binding.addressInput.text = placeDetails.name
+                initialLocation = placeDetails.location
+                directionRepository.initialLocation = initialLocation
+                setMarkerToInitialLocation()
+                drawRouteBetweenOriginAndDestination(
+                    placeDetails.location, DirectionRepository.DXB_AIRPORT_LOCATION)
+
+            }, { throwable -> Timber.e(throwable, "Error retrieving place details") })
+        compositeDisposable.add(disposable)
+    }
+
     private fun onLocationPermissionGuaranteed() {
         locationPermissionGranted = true
         // Turn on the my location layer and the related control on thee map
@@ -97,7 +121,7 @@ class OriginFragment: AbsBaseMapFragment() {
 
     private fun onLocationPermissionDenegated() {
         googleMap?.let {googleMapNotNull ->
-            lastKnownLocation?.let { lastKnownLocationNotNull ->
+            initialLocation?.let { lastKnownLocationNotNull ->
                 googleMapNotNull.moveCamera(
                     CameraUpdateFactory.newLatLngZoom(lastKnownLocationNotNull.toLatLng(), DEFAULT_ZOOM))
             } ?: run {
@@ -131,9 +155,9 @@ class OriginFragment: AbsBaseMapFragment() {
             val locationResult = fusedLocationProviderClient.lastLocation
             locationResult.addOnCompleteListener { task ->
                 if (task.isSuccessful && task.result != null) {
-                    lastKnownLocation = (task.result as Location).toCoordinate()
-                    directionRepository.lastKnownLocation = lastKnownLocation
-                    setMarkerToLastKnownLocation(it)
+                    initialLocation = (task.result as Location).toCoordinate()
+                    directionRepository.initialLocation = initialLocation
+                    setMarkerToInitialLocation()
                     drawDistanceToTheAirport()
                 } else {
                     // TODO: Subscribe to updates from fused service
@@ -146,19 +170,26 @@ class OriginFragment: AbsBaseMapFragment() {
     }
 
     private fun drawDistanceToTheAirport() {
-        lastKnownLocation?.let {
+        initialLocation?.let {
             drawRouteBetweenOriginAndDestination(it, DirectionRepository.DXB_AIRPORT_LOCATION)
         }
     }
 
-    private fun setMarkerToLastKnownLocation(googleMap: GoogleMap) {
-        lastKnownLocation?.let{
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(it.toLatLng(), DEFAULT_ZOOM))
+    private fun setMarkerToInitialLocation() {
+        googleMap?.let {googleMapNotNull ->
+            initialLocation?.let {
+                googleMapNotNull.moveCamera(CameraUpdateFactory.newLatLngZoom(it.toLatLng(), DEFAULT_ZOOM))
 
-            val markerOptions = MarkerOptions()
-            markerOptions.position(it.toLatLng())
-            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-            googleMap.addMarker(markerOptions)
+                val markerOptions = MarkerOptions()
+                markerOptions.position(it.toLatLng())
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                googleMapNotNull.addMarker(markerOptions)
+            }
         }
+    }
+
+    override fun onDestroy() {
+        compositeDisposable.clear()
+        super.onDestroy()
     }
 }

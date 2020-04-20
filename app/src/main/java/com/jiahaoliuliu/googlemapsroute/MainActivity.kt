@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
+import com.jiahaoliuliu.googlemapsroute.LocationSearchFragment.Caller
 import com.jiahaoliuliu.googlemapsroute.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoundListener {
@@ -50,17 +51,21 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
         supportFragmentManager.beginTransaction().replace(R.id.container, destinationFragment).commit()
     }
 
-    override fun onSearchLocationByAddressRequested(address: String) {
-        locationSearchFragment?.let {
-            supportFragmentManager.beginTransaction().replace(R.id.container, it).commit()
-        } ?: run {
-            locationSearchFragment = LocationSearchFragment.newInstance(address)
-            supportFragmentManager.beginTransaction().replace(R.id.container, locationSearchFragment!!).commit()
-        }
+    override fun onSearchLocationByAddressRequested(address: String, caller: Caller) {
+        locationSearchFragment = LocationSearchFragment.newInstance(address, caller)
+        supportFragmentManager.beginTransaction().replace(R.id.container, locationSearchFragment!!).commit()
     }
 
-    override fun onLocationFound(id: String) {
-        destinationFragment.showRouteToLocation(id)
-        showDestinationScreen()
+    override fun onLocationFound(id: String, caller: Caller) {
+        when (caller) {
+            Caller.ORIGIN -> {
+                originFragment.showRouteFromLocation(id)
+                showOriginScreen()
+            }
+            Caller.DESTINATION -> {
+                destinationFragment.showRouteToLocation(id)
+                showDestinationScreen()
+            }
+        }
     }
 }

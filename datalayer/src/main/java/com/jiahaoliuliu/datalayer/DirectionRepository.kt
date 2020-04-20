@@ -15,7 +15,7 @@ class DirectionRepository(private val googleDirectionAPIService: GoogleDirection
         val BALI_AIRPORT_LOCATION = Coordinate(-8.744000, 115.174858)
     }
 
-    var lastKnownLocation: Coordinate? = null
+    var initialLocation: Coordinate? = null
 
     fun calculateDirection(origin: Coordinate, destination: Coordinate): Single<Direction> {
         return googleDirectionAPIService.getDirection(

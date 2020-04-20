@@ -13,6 +13,7 @@ import com.google.android.gms.maps.model.PolylineOptions
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.datalayer.PlacesRepository
 import com.jiahaoliuliu.entity.PlaceDetails
+import com.jiahaoliuliu.googlemapsroute.LocationSearchFragment.Caller
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentDestinationBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -24,12 +25,12 @@ class DestinationFragment: AbsBaseMapFragment() {
 
     companion object {
         private const val DEFAULT_ZOOM = 15F
+        private val compositeDisposable = CompositeDisposable()
     }
 
     @Inject lateinit var placesRepository: PlacesRepository
     private lateinit var binding: FragmentDestinationBinding
     private lateinit var onSearchLocationListener: SearchLocationListener
-    private val compositeDisposable = CompositeDisposable()
     private var finalDestination: PlaceDetails? = null
 
     override fun onAttach(context: Context) {
@@ -50,7 +51,8 @@ class DestinationFragment: AbsBaseMapFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         MainApplication.getMainComponent()?.inject(this)
         binding.addressInput.setOnClickListener {
-            onSearchLocationListener.onSearchLocationByAddressRequested(binding.addressInput.text.toString()) }
+            onSearchLocationListener.onSearchLocationByAddressRequested(
+                binding.addressInput.text.toString(), Caller.DESTINATION) }
         binding.showFullRouteButton.setOnClickListener{showFullRoute()}
         super.onActivityCreated(savedInstanceState)
     }
@@ -90,7 +92,7 @@ class DestinationFragment: AbsBaseMapFragment() {
     }
 
     private fun showFullRoute() {
-        directionRepository.lastKnownLocation?.let {lastKnownLocationNotNull ->
+        directionRepository.initialLocation?.let { lastKnownLocationNotNull ->
             finalDestination?.let {finalDestinationNotNull ->
                 drawRouteBetweenOriginAndDestination(lastKnownLocationNotNull, DirectionRepository.DXB_AIRPORT_LOCATION, boundMapToLocations = false)
 
@@ -117,5 +119,5 @@ class DestinationFragment: AbsBaseMapFragment() {
 
 interface SearchLocationListener {
 
-    fun onSearchLocationByAddressRequested(address: String)
+    fun onSearchLocationByAddressRequested(address: String, caller: Caller)
 }
