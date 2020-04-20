@@ -76,8 +76,8 @@ abstract class AbsBaseMapFragment: Fragment() {
                 val padding = (width * PERCENTAGE_PADDING/100)
 
                 val bounds = LatLngBounds.builder()
-                    .include(LatLng(direction.bounds.northeast.latitude, direction.bounds.northeast.longitude))
-                    .include(LatLng(direction.bounds.southwest.latitude, direction.bounds.southwest.longitude))
+                    .include(direction.bounds.northeast.toLatLng())
+                    .include(direction.bounds.southwest.toLatLng())
                     .build()
                 googleMap?.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding))
             },

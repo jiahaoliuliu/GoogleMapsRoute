@@ -10,7 +10,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.jiahaoliuliu.datalayer.PlacesRepository
-import com.jiahaoliuliu.entity.Coordinate
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentDestinationBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -49,6 +48,7 @@ class DestinationFragment: AbsBaseMapFragment() {
         MainApplication.getMainComponent()?.inject(this)
         binding.addressInput.setOnClickListener {
             onSearchLocationListener.onSearchLocationByAddressRequested(binding.addressInput.text.toString()) }
+        binding.showFullRouteButton.setOnClickListener{showFullRoute()}
         super.onActivityCreated(savedInstanceState)
     }
 
@@ -66,8 +66,7 @@ class DestinationFragment: AbsBaseMapFragment() {
 
             googleMapNotNull.moveCamera(
                 CameraUpdateFactory.newLatLngZoom(
-                    LatLng(BALI_AIRPORT_LOCATION.latitude, BALI_AIRPORT_LOCATION.longitude),
-                    DEFAULT_ZOOM))
+                    BALI_AIRPORT_LOCATION, DEFAULT_ZOOM))
         }
     }
 
@@ -78,12 +77,21 @@ class DestinationFragment: AbsBaseMapFragment() {
             .subscribe({ placeDetails ->
                 binding.addressInput.text = placeDetails.name
                 drawRouteBetweenOriginAndDestination(
-                    Coordinate(BALI_AIRPORT_LOCATION.latitude, BALI_AIRPORT_LOCATION.longitude),
-                    placeDetails.location
+                    BALI_AIRPORT_LOCATION.toCoordinate(), placeDetails.location
                 )
+
+                binding.showFullRouteButton.visibility = View.VISIBLE
             }, { throwable -> Timber.e(throwable, "Error retrieving place details") })
-        // TODO dispose this
         compositeDisposable.add(disposable)
+    }
+
+    private fun showFullRoute() {
+
+    }
+
+    override fun onDestroy() {
+        compositeDisposable.dispose()
+        super.onDestroy()
     }
 }
 
