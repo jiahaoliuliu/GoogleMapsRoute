@@ -12,4 +12,5 @@ interface MainComponent {
     fun inject(originFragment: OriginFragment)
     fun inject(destinationFragment: DestinationFragment)
     fun inject(locationSearchFragment: LocationSearchFragment)
+    fun inject(pinSearchFragment: PinSearchFragment)
 }

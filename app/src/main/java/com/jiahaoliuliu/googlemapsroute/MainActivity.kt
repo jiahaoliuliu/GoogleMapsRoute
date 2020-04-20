@@ -56,6 +56,11 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
         supportFragmentManager.beginTransaction().replace(R.id.container, locationSearchFragment!!).commit()
     }
 
+    override fun onSearchLocationByPinRequested() {
+        val pinSearchFragment = PinSearchFragment()
+        supportFragmentManager.beginTransaction().replace(R.id.container, pinSearchFragment).commit()
+    }
+
     override fun onLocationFound(id: String, caller: Caller) {
         when (caller) {
             Caller.ORIGIN -> {

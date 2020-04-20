@@ -15,6 +15,7 @@ import com.google.maps.android.PolyUtil
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.entity.Coordinate
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import javax.inject.Inject
@@ -27,6 +28,7 @@ abstract class AbsBaseMapFragment: Fragment() {
     companion object {
         // offset from edges of the map - 20% of screen
         private const val PERCENTAGE_PADDING = 20
+        private val compositeDisposable = CompositeDisposable()
     }
 
     @Inject lateinit var directionRepository: DirectionRepository
@@ -68,6 +70,7 @@ abstract class AbsBaseMapFragment: Fragment() {
             },
                 {throwable -> Timber.e(throwable, "Error getting the direction")}
             )
+        compositeDisposable.add(disposable)
     }
 
     fun boundMapToLocations(vararg locations: LatLng) {
@@ -94,6 +97,11 @@ abstract class AbsBaseMapFragment: Fragment() {
                 .anchor(0.5f, 0.5f)
                 .icon(BitmapDescriptorFactory.fromBitmap(bmp))
         )
+    }
+
+    override fun onDestroy() {
+        compositeDisposable.clear()
+        super.onDestroy()
     }
 
     private fun loadBitmapFromView(v: View): Bitmap {

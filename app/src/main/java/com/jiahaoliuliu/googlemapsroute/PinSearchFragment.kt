@@ -18,14 +18,14 @@ import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.datalayer.PlacesRepository
 import com.jiahaoliuliu.entity.Coordinate
 import com.jiahaoliuliu.googlemapsroute.LocationSearchFragment.Caller
-import com.jiahaoliuliu.googlemapsroute.databinding.FragmentOriginBinding
+import com.jiahaoliuliu.googlemapsroute.databinding.FragmentPingSearchBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import javax.inject.Inject
 
-class OriginFragment: AbsBaseMapFragment() {
+class PinSearchFragment: AbsBaseMapFragment() {
 
     companion object {
         private const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1000
@@ -35,7 +35,7 @@ class OriginFragment: AbsBaseMapFragment() {
     }
 
     @Inject lateinit var placesRepository: PlacesRepository
-    private lateinit var binding: FragmentOriginBinding
+    private lateinit var binding: FragmentPingSearchBinding
     private lateinit var onSearchLocationListener: SearchLocationListener
     private var isLocationPermissionAlreadyAskedToUser = false
     private var locationPermissionGranted = false
@@ -53,7 +53,7 @@ class OriginFragment: AbsBaseMapFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
-        binding = FragmentOriginBinding.inflate(inflater, container, false)
+        binding = FragmentPingSearchBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -62,7 +62,6 @@ class OriginFragment: AbsBaseMapFragment() {
         binding.addressInput.setOnClickListener {
             onSearchLocationListener.onSearchLocationByAddressRequested(
                 binding.addressInput.text.toString(), Caller.ORIGIN) }
-        binding.pinLocationIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByPinRequested()}
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity!!)
         // The super class will try to find the map and synchronize it
         super.onActivityCreated(savedInstanceState)

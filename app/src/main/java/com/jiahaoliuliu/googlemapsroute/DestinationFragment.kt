@@ -120,4 +120,6 @@ class DestinationFragment: AbsBaseMapFragment() {
 interface SearchLocationListener {
 
     fun onSearchLocationByAddressRequested(address: String, caller: Caller)
+
+    fun onSearchLocationByPinRequested()
 }
