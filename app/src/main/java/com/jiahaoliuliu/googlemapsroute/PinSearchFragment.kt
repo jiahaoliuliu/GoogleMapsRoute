@@ -6,9 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
+import com.jiahaoliuliu.datalayer.GeocodeRepository
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentPingSearchBinding
 import io.reactivex.disposables.CompositeDisposable
 import timber.log.Timber
+import javax.inject.Inject
 
 class PinSearchFragment: AbsBaseMapFragment() {
 
@@ -18,6 +20,7 @@ class PinSearchFragment: AbsBaseMapFragment() {
         private val compositeDisposable = CompositeDisposable()
     }
 
+    @Inject lateinit var geocodeRepository: GeocodeRepository
     private lateinit var binding: FragmentPingSearchBinding
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
