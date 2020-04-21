@@ -33,6 +33,8 @@ abstract class AbsBaseMapFragment: Fragment() {
 
     @Inject lateinit var directionRepository: DirectionRepository
     protected var googleMap: GoogleMap? = null
+    private var route: Polyline? = null
+    private var markerBetweenLocations: Marker? = null
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -63,12 +65,15 @@ abstract class AbsBaseMapFragment: Fragment() {
             .subscribe({direction ->
                 val positions = PolyUtil.decode(direction.polyline)
                 // Add the lines
-                googleMap?.addPolyline(
+                route?.remove()
+                route = googleMap?.addPolyline(
                     PolylineOptions()
                         .color(ContextCompat.getColor(context!!, R.color.colorRoute))
                     .addAll(positions))
+
                 // Add the marker
-                addMarkerBetweenLocations("${direction.duration}(${direction.distance})", positions)
+                markerBetweenLocations?.remove()
+                markerBetweenLocations = addMarkerBetweenLocations("${direction.duration}(${direction.distance})", positions)
 
                 // Move the camera
                 if (boundMapToLocations) {
@@ -92,13 +97,13 @@ abstract class AbsBaseMapFragment: Fragment() {
         )
     }
 
-    fun addMarkerBetweenLocations(text: String, locations: List<LatLng> ) {
+    fun addMarkerBetweenLocations(text: String, locations: List<LatLng> ): Marker? {
         val view = activity?.layoutInflater?.inflate(R.layout.direction_marker, null, false) as TextView
         view.text = text
         val bmp = loadBitmapFromView(view)
         val midPoint = getMidPoint(locations)
 
-        googleMap?.addMarker(
+        return googleMap?.addMarker(
             MarkerOptions()
                 .position(midPoint)
                 .anchor(0.5f, 0.5f)

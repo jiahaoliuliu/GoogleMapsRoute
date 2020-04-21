@@ -1,5 +1,6 @@
 package com.jiahaoliuliu.googlemapsroute
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -27,6 +28,16 @@ class PinSearchFragment: AbsBaseMapFragment() {
     @Inject lateinit var geocodeRepository: GeocodeRepository
     private lateinit var binding: FragmentPingSearchBinding
     private var finalPosition: Coordinate? = null
+    private lateinit var onLocationSetByPinListener: OnLocationSetByPinListener
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnLocationSetByPinListener) {
+            onLocationSetByPinListener = context
+        } else {
+            throw ClassCastException("The attached class must implement OnLocationSetByPinListener")
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
@@ -45,6 +56,7 @@ class PinSearchFragment: AbsBaseMapFragment() {
     private fun setLocation() {
         finalPosition?.let {
             // Return to the activity with the position
+            onLocationSetByPinListener.onLocationSetByPin(it)
         }
     }
 
@@ -78,4 +90,9 @@ class PinSearchFragment: AbsBaseMapFragment() {
         compositeDisposable.clear()
         super.onDestroy()
     }
+}
+
+interface OnLocationSetByPinListener {
+
+    fun onLocationSetByPin(locationSetByPin: Coordinate)
 }
