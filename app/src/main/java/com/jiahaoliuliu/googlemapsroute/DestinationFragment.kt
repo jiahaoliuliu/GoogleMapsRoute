@@ -111,6 +111,11 @@ class DestinationFragment: AbsBaseMapFragment() {
         }
     }
 
+    override fun showProgressScreen(showIt: Boolean) {
+        val visibility = if (showIt) View.VISIBLE else View.GONE
+        binding.progressBar.visibility = visibility
+    }
+
     override fun onDestroy() {
         compositeDisposable.clear()
         super.onDestroy()
