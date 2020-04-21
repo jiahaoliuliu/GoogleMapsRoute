@@ -58,7 +58,9 @@ abstract class AbsBaseMapFragment: Fragment() {
         // Not do anything. This method is mean to be overriden
     }
 
-    protected fun drawRouteBetweenOriginAndDestination(origin: Coordinate, destination: Coordinate, boundMapToLocations: Boolean = true) {
+    protected fun drawRouteBetweenOriginAndDestination(origin: Coordinate, destination: Coordinate,
+                                                       boundMapToLocations: Boolean = true,
+                                                        removePreviousRoute: Boolean = false) {
         val disposable = directionRepository.calculateDirection(origin, destination)
             .subscribeOn(Schedulers.io())
             .doOnSubscribe { showProgressScreen(true) }
@@ -67,14 +69,16 @@ abstract class AbsBaseMapFragment: Fragment() {
             .subscribe({direction ->
                 val positions = PolyUtil.decode(direction.polyline)
                 // Add the lines
-                route?.remove()
+                if (removePreviousRoute) {
+                    route?.remove()
+                    markerBetweenLocations?.remove()
+                }
                 route = googleMap?.addPolyline(
                     PolylineOptions()
                         .color(ContextCompat.getColor(context!!, R.color.colorRoute))
                     .addAll(positions))
 
                 // Add the marker
-                markerBetweenLocations?.remove()
                 markerBetweenLocations = addMarkerBetweenLocations("${direction.duration}(${direction.distance})", positions)
 
                 // Move the camera

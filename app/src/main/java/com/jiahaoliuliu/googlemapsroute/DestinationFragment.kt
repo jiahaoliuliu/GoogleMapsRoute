@@ -94,7 +94,8 @@ class DestinationFragment: AbsBaseMapFragment() {
     private fun showFullRoute() {
         directionRepository.initialLocation?.let { lastKnownLocationNotNull ->
             finalDestination?.let {finalDestinationNotNull ->
-                drawRouteBetweenOriginAndDestination(lastKnownLocationNotNull, DirectionRepository.DXB_AIRPORT_LOCATION, boundMapToLocations = false)
+                drawRouteBetweenOriginAndDestination(lastKnownLocationNotNull, DirectionRepository.DXB_AIRPORT_LOCATION,
+                    boundMapToLocations = false, removePreviousRoute = false)
 
                 // Draw a line between the Dubai airport and Bali airport
                 googleMap?.addPolyline(
