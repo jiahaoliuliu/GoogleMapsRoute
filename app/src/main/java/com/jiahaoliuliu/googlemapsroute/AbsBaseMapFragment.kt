@@ -44,10 +44,17 @@ abstract class AbsBaseMapFragment: Fragment() {
         supportMapFragment.getMapAsync {
             googleMap = it
             onMapSynchronized()
+            it.setOnCameraIdleListener {
+                onMapCameraIdle()
+            }
         }
     }
 
     abstract fun onMapSynchronized()
+
+    open fun onMapCameraIdle() {
+        // Not do anything. This method is mean to be overriden
+    }
 
     protected fun drawRouteBetweenOriginAndDestination(origin: Coordinate, destination: Coordinate, boundMapToLocations: Boolean = true) {
         val disposable = directionRepository.calculateDirection(origin, destination)
