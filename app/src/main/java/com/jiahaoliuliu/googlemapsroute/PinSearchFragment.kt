@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.jiahaoliuliu.datalayer.GeocodeRepository
+import com.jiahaoliuliu.entity.Address
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentPingSearchBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -51,10 +52,17 @@ class PinSearchFragment: AbsBaseMapFragment() {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-                    Timber.v("Address found $it")
+                    showAddress(it)
                 }, {
                     Timber.e(it, "Error getting the address")
                 })
+        }
+    }
+
+    private fun showAddress(address: Address) {
+        binding.addressFound.text = address.name
+        if (binding.addressFound.visibility == View.GONE) {
+            binding.addressFound.visibility = View.VISIBLE
         }
     }
 

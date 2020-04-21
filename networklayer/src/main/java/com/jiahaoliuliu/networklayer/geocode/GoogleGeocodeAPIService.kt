@@ -32,5 +32,5 @@ interface GoogleGeocodeAPIService {
     fun getAddressBasedOnLocation(@Query("language") language: String = LANGUAGE_EN,
                                @Query("latlng", encoded=true) location: String,
                                @Query("key") key: String = GOOGLE_API_KEY
-    ): Single<String>
+    ): Single<GeocodeNetworkResponse>
 }
