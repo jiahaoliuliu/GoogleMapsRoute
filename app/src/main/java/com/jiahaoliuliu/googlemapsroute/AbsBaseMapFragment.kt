@@ -61,7 +61,9 @@ abstract class AbsBaseMapFragment: Fragment() {
     protected fun drawRouteBetweenOriginAndDestination(origin: Coordinate, destination: Coordinate, boundMapToLocations: Boolean = true) {
         val disposable = directionRepository.calculateDirection(origin, destination)
             .subscribeOn(Schedulers.io())
+            .doOnSubscribe { showProgressScreen(true) }
             .observeOn(AndroidSchedulers.mainThread())
+            .doOnSuccess { showProgressScreen(false) }
             .subscribe({direction ->
                 val positions = PolyUtil.decode(direction.polyline)
                 // Add the lines
@@ -83,6 +85,10 @@ abstract class AbsBaseMapFragment: Fragment() {
                 {throwable -> Timber.e(throwable, "Error getting the direction")}
             )
         compositeDisposable.add(disposable)
+    }
+
+    open fun showProgressScreen(showIt: Boolean) {
+        // Do nothing. This method is mean to be overrided
     }
 
     fun boundMapToLocations(vararg locations: LatLng) {

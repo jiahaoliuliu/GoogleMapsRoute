@@ -50,5 +50,18 @@
                 android:layout_gravity="end"
                 android:contentDescription="pin_icon" />
         </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/progress_bar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            >
+            <androidx.core.widget.ContentLoadingProgressBar
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"/>
+        </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
