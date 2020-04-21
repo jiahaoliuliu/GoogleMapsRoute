@@ -70,15 +70,6 @@ class OriginFragment: AbsBaseMapFragment() {
         super.onActivityCreated(savedInstanceState)
     }
 
-    override fun onResume() {
-        super.onResume()
-        initialLocation?.let {
-            setMarkerToInitialLocation()
-            drawRouteBetweenOriginAndDestination(
-                it, DirectionRepository.DXB_AIRPORT_LOCATION)
-        }
-    }
-
     override fun onMapSynchronized() {
         // Init the map
         googleMap?.moveCamera(
@@ -88,6 +79,16 @@ class OriginFragment: AbsBaseMapFragment() {
         if (!isLocationPermissionAlreadyAskedToUser) {
             isLocationPermissionAlreadyAskedToUser = true
             getLocationPermission()
+        } else {
+            initialLocation?.let {
+                setMarkerToInitialLocation()
+                boundMapToLocations(it.toLatLng(), DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng())
+                drawRouteBetweenOriginAndDestination(
+                    it, DirectionRepository.DXB_AIRPORT_LOCATION, false
+                )
+            }
+
+            binding.searchLayout.visibility = View.VISIBLE
         }
     }
 
