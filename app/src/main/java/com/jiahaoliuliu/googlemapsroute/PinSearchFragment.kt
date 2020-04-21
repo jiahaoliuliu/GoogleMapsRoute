@@ -8,6 +8,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.jiahaoliuliu.datalayer.GeocodeRepository
 import com.jiahaoliuliu.entity.Address
+import com.jiahaoliuliu.entity.Coordinate
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentPingSearchBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -25,6 +26,7 @@ class PinSearchFragment: AbsBaseMapFragment() {
 
     @Inject lateinit var geocodeRepository: GeocodeRepository
     private lateinit var binding: FragmentPingSearchBinding
+    private var finalPosition: Coordinate? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
@@ -34,27 +36,33 @@ class PinSearchFragment: AbsBaseMapFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         MainApplication.getMainComponent()?.inject(this)
+        binding.setLocationButton.setOnClickListener {
+            setLocation()
+        }
         super.onActivityCreated(savedInstanceState)
     }
 
-    override fun onMapSynchronized() {
-        googleMap?.let {
-            it.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM))
-            val centerPosition = it.projection?.visibleRegion?.latLngBounds?.center
-            Timber.v("Center position $centerPosition")
+    private fun setLocation() {
+        finalPosition?.let {
+            // Return to the activity with the position
         }
+    }
+
+    override fun onMapSynchronized() {
+        googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM))
     }
 
     override fun onMapCameraIdle() {
         val centerPosition = googleMap?.projection?.visibleRegion?.latLngBounds?.center
         centerPosition?.let {
+            finalPosition = it.toCoordinate()
             geocodeRepository.retrieveAddress(centerPosition.toCoordinate())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
-                    showAddress(it)
-                }, {
-                    Timber.e(it, "Error getting the address")
+                .subscribe({address ->
+                    showAddress(address)
+                }, {throwable ->
+                    Timber.e(throwable, "Error getting the address")
                 })
         }
     }
