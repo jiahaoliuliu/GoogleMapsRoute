@@ -13,6 +13,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.datalayer.PlacesRepository
@@ -41,6 +42,7 @@ class OriginFragment: AbsBaseMapFragment() {
     private var locationPermissionGranted = false
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private var initialLocation: Coordinate? = null
+    private var initialLocationMarker: Marker? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -62,15 +64,31 @@ class OriginFragment: AbsBaseMapFragment() {
         binding.addressInput.setOnClickListener {
             onSearchLocationListener.onSearchLocationByAddressRequested(
                 binding.addressInput.text.toString(), Caller.ORIGIN) }
+        binding.pinLocationIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByPinRequested()}
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity!!)
         // The super class will try to find the map and synchronize it
         super.onActivityCreated(savedInstanceState)
     }
 
     override fun onMapSynchronized() {
+        // Init the map
+        googleMap?.moveCamera(
+            CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM)
+        )
+
         if (!isLocationPermissionAlreadyAskedToUser) {
             isLocationPermissionAlreadyAskedToUser = true
             getLocationPermission()
+        } else {
+            initialLocation?.let {
+                setMarkerToInitialLocation()
+                boundMapToLocations(it.toLatLng(), DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng())
+                drawRouteBetweenOriginAndDestination(
+                    it, DirectionRepository.DXB_AIRPORT_LOCATION, false
+                )
+            }
+
+            binding.searchLayout.visibility = View.VISIBLE
         }
     }
 
@@ -93,26 +111,10 @@ class OriginFragment: AbsBaseMapFragment() {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     onLocationPermissionGuaranteed()
                 } else {
-                    onLocationPermissionDenegated()
+                    onLocationPermissionNegated()
                 }
             }
         }
-    }
-
-    fun showRouteFromLocation(placeId: String) {
-        val disposable = placesRepository.retrievePlaceDetails(placeId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ placeDetails ->
-                binding.addressInput.text = placeDetails.name
-                initialLocation = placeDetails.location
-                directionRepository.initialLocation = initialLocation
-                setMarkerToInitialLocation()
-                drawRouteBetweenOriginAndDestination(
-                    placeDetails.location, DirectionRepository.DXB_AIRPORT_LOCATION)
-
-            }, { throwable -> Timber.e(throwable, "Error retrieving place details") })
-        compositeDisposable.add(disposable)
     }
 
     private fun onLocationPermissionGuaranteed() {
@@ -123,21 +125,16 @@ class OriginFragment: AbsBaseMapFragment() {
         getDeviceLocation();
     }
 
-    private fun onLocationPermissionDenegated() {
+    private fun onLocationPermissionNegated() {
         googleMap?.let {googleMapNotNull ->
             initialLocation?.let { lastKnownLocationNotNull ->
                 googleMapNotNull.moveCamera(
                     CameraUpdateFactory.newLatLngZoom(lastKnownLocationNotNull.toLatLng(), DEFAULT_ZOOM))
-            } ?: run {
-                // if the permission is not guaranteed, then use the default location
-                googleMapNotNull.moveCamera(
-                    CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM)
-                )
             }
             googleMapNotNull.uiSettings.isMyLocationButtonEnabled = false
         }
 
-        binding.addressInput.visibility = View.VISIBLE
+        binding.searchLayout.visibility = View.VISIBLE
     }
 
     private fun updateLocationUI() {
@@ -182,14 +179,37 @@ class OriginFragment: AbsBaseMapFragment() {
     private fun setMarkerToInitialLocation() {
         googleMap?.let {googleMapNotNull ->
             initialLocation?.let {
+                initialLocationMarker?.remove()
                 googleMapNotNull.moveCamera(CameraUpdateFactory.newLatLngZoom(it.toLatLng(), DEFAULT_ZOOM))
-
                 val markerOptions = MarkerOptions()
                 markerOptions.position(it.toLatLng())
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                googleMapNotNull.addMarker(markerOptions)
+                initialLocationMarker = googleMapNotNull.addMarker(markerOptions)
             }
         }
+    }
+
+    fun showRouteFromLocation(placeId: String) {
+        val disposable = placesRepository.retrievePlaceDetails(placeId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ placeDetails ->
+                binding.addressInput.text = placeDetails.name
+                initialLocation = placeDetails.location
+                directionRepository.initialLocation = initialLocation
+            }, { throwable -> Timber.e(throwable, "Error retrieving place details") })
+        compositeDisposable.add(disposable)
+    }
+
+    fun showRouteFromLocation(location: Coordinate) {
+        initialLocation = location
+        directionRepository.initialLocation = initialLocation
+        binding.searchLayout.visibility = View.VISIBLE
+    }
+
+    override fun showProgressScreen(showIt: Boolean) {
+        val visibility = if (showIt) View.VISIBLE else View.GONE
+        binding.progressBar.visibility = visibility
     }
 
     override fun onDestroy() {

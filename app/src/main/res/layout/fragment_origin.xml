@@ -12,26 +12,56 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 
-        <Button
-            android:id="@+id/address_input"
+        <LinearLayout
+            android:id="@+id/search_layout"
             android:layout_width="match_parent"
             android:layout_height="35dp"
+            android:orientation="horizontal"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:background="@android:color/white"
-            android:textColor="@android:color/black"
-            android:singleLine="true"
-            android:textColorHint="@android:color/darker_gray"
-            android:autofillHints="Enter your destination"
-            tools:text="My location"
-            android:visibility="gone"
-            tools:visibility="visible"
-            android:gravity="start|center_vertical"
             android:layout_marginTop="10dp"
+            android:background="@android:color/white"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintVertical_bias="0"/>
+            app:layout_constraintVertical_bias="0"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <Button
+                android:id="@+id/address_input"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@android:color/white"
+                android:textColor="@android:color/black"
+                android:singleLine="true"
+                android:textColorHint="@android:color/darker_gray"
+                android:autofillHints="Enter your destination"
+                tools:text="My location"
+                android:gravity="start|center_vertical"/>
+
+            <ImageView
+                android:id="@+id/pin_location_icon"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:background="@drawable/ic_ping_location"
+                android:layout_gravity="end"
+                android:contentDescription="pin_icon" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/progress_bar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            >
+            <androidx.core.widget.ContentLoadingProgressBar
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"/>
+        </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

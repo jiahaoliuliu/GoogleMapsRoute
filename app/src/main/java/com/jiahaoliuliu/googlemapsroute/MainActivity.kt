@@ -5,10 +5,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
+import com.jiahaoliuliu.entity.Coordinate
 import com.jiahaoliuliu.googlemapsroute.LocationSearchFragment.Caller
 import com.jiahaoliuliu.googlemapsroute.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoundListener {
+class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoundListener, OnLocationSetByPinListener {
 
     private lateinit var binding: ActivityMainBinding
     private val originFragment = OriginFragment()
@@ -56,16 +57,26 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
         supportFragmentManager.beginTransaction().replace(R.id.container, locationSearchFragment!!).commit()
     }
 
-    override fun onLocationFound(id: String, caller: Caller) {
+    override fun onSearchLocationByPinRequested() {
+        val pinSearchFragment = PinSearchFragment()
+        supportFragmentManager.beginTransaction().replace(R.id.container, pinSearchFragment).commit()
+    }
+
+    override fun onLocationFound(placeId: String, caller: Caller) {
         when (caller) {
             Caller.ORIGIN -> {
-                originFragment.showRouteFromLocation(id)
+                originFragment.showRouteFromLocation(placeId)
                 showOriginScreen()
             }
             Caller.DESTINATION -> {
-                destinationFragment.showRouteToLocation(id)
+                destinationFragment.showRouteToLocation(placeId)
                 showDestinationScreen()
             }
         }
+    }
+
+    override fun onLocationSetByPin(locationSetByPin: Coordinate) {
+        originFragment.showRouteFromLocation(locationSetByPin)
+        showOriginScreen()
     }
 }

@@ -9,10 +9,6 @@ import io.reactivex.Single
 
 class PlacesRepository(private val googlePlacesAPIService: GooglePlacesAPIService) {
 
-    fun retrieveLocation(address: String): Single<String> {
-        return googlePlacesAPIService.getLocation(address = address)
-    }
-
     fun retrievePredictions(input: String): Single<List<Place>> {
         return googlePlacesAPIService.getPredictions(input = input)
             .flatMap { predictionsNetworkResponse ->

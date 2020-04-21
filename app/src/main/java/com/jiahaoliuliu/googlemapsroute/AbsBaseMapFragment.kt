@@ -15,6 +15,7 @@ import com.google.maps.android.PolyUtil
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.entity.Coordinate
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import javax.inject.Inject
@@ -27,10 +28,13 @@ abstract class AbsBaseMapFragment: Fragment() {
     companion object {
         // offset from edges of the map - 20% of screen
         private const val PERCENTAGE_PADDING = 20
+        private val compositeDisposable = CompositeDisposable()
     }
 
     @Inject lateinit var directionRepository: DirectionRepository
     protected var googleMap: GoogleMap? = null
+    private var route: Polyline? = null
+    private var markerBetweenLocations: Marker? = null
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -42,24 +46,40 @@ abstract class AbsBaseMapFragment: Fragment() {
         supportMapFragment.getMapAsync {
             googleMap = it
             onMapSynchronized()
+            it.setOnCameraIdleListener {
+                onMapCameraIdle()
+            }
         }
     }
 
     abstract fun onMapSynchronized()
 
-    protected fun drawRouteBetweenOriginAndDestination(origin: Coordinate, destination: Coordinate, boundMapToLocations: Boolean = true) {
+    open fun onMapCameraIdle() {
+        // Not do anything. This method is mean to be overriden
+    }
+
+    protected fun drawRouteBetweenOriginAndDestination(origin: Coordinate, destination: Coordinate,
+                                                       boundMapToLocations: Boolean = true,
+                                                        removePreviousRoute: Boolean = false) {
         val disposable = directionRepository.calculateDirection(origin, destination)
             .subscribeOn(Schedulers.io())
+            .doOnSubscribe { showProgressScreen(true) }
             .observeOn(AndroidSchedulers.mainThread())
+            .doOnSuccess { showProgressScreen(false) }
             .subscribe({direction ->
                 val positions = PolyUtil.decode(direction.polyline)
                 // Add the lines
-                googleMap?.addPolyline(
+                if (removePreviousRoute) {
+                    route?.remove()
+                    markerBetweenLocations?.remove()
+                }
+                route = googleMap?.addPolyline(
                     PolylineOptions()
                         .color(ContextCompat.getColor(context!!, R.color.colorRoute))
                     .addAll(positions))
+
                 // Add the marker
-                addMarkerBetweenLocations("${direction.duration}(${direction.distance})", positions)
+                markerBetweenLocations = addMarkerBetweenLocations("${direction.duration}(${direction.distance})", positions)
 
                 // Move the camera
                 if (boundMapToLocations) {
@@ -68,6 +88,11 @@ abstract class AbsBaseMapFragment: Fragment() {
             },
                 {throwable -> Timber.e(throwable, "Error getting the direction")}
             )
+        compositeDisposable.add(disposable)
+    }
+
+    open fun showProgressScreen(showIt: Boolean) {
+        // Do nothing. This method is mean to be overrided
     }
 
     fun boundMapToLocations(vararg locations: LatLng) {
@@ -82,18 +107,23 @@ abstract class AbsBaseMapFragment: Fragment() {
         )
     }
 
-    fun addMarkerBetweenLocations(text: String, locations: List<LatLng> ) {
+    fun addMarkerBetweenLocations(text: String, locations: List<LatLng> ): Marker? {
         val view = activity?.layoutInflater?.inflate(R.layout.direction_marker, null, false) as TextView
         view.text = text
         val bmp = loadBitmapFromView(view)
         val midPoint = getMidPoint(locations)
 
-        googleMap?.addMarker(
+        return googleMap?.addMarker(
             MarkerOptions()
                 .position(midPoint)
                 .anchor(0.5f, 0.5f)
                 .icon(BitmapDescriptorFactory.fromBitmap(bmp))
         )
+    }
+
+    override fun onDestroy() {
+        compositeDisposable.clear()
+        super.onDestroy()
     }
 
     private fun loadBitmapFromView(v: View): Bitmap {

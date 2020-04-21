@@ -94,7 +94,8 @@ class DestinationFragment: AbsBaseMapFragment() {
     private fun showFullRoute() {
         directionRepository.initialLocation?.let { lastKnownLocationNotNull ->
             finalDestination?.let {finalDestinationNotNull ->
-                drawRouteBetweenOriginAndDestination(lastKnownLocationNotNull, DirectionRepository.DXB_AIRPORT_LOCATION, boundMapToLocations = false)
+                drawRouteBetweenOriginAndDestination(lastKnownLocationNotNull, DirectionRepository.DXB_AIRPORT_LOCATION,
+                    boundMapToLocations = false, removePreviousRoute = false)
 
                 // Draw a line between the Dubai airport and Bali airport
                 googleMap?.addPolyline(
@@ -111,6 +112,11 @@ class DestinationFragment: AbsBaseMapFragment() {
         }
     }
 
+    override fun showProgressScreen(showIt: Boolean) {
+        val visibility = if (showIt) View.VISIBLE else View.GONE
+        binding.progressBar.visibility = visibility
+    }
+
     override fun onDestroy() {
         compositeDisposable.clear()
         super.onDestroy()
@@ -120,4 +126,6 @@ class DestinationFragment: AbsBaseMapFragment() {
 interface SearchLocationListener {
 
     fun onSearchLocationByAddressRequested(address: String, caller: Caller)
+
+    fun onSearchLocationByPinRequested()
 }
