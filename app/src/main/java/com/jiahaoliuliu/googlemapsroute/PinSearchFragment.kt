@@ -8,7 +8,9 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.jiahaoliuliu.datalayer.GeocodeRepository
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentPingSearchBinding
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -44,6 +46,16 @@ class PinSearchFragment: AbsBaseMapFragment() {
 
     override fun onMapCameraIdle() {
         val centerPosition = googleMap?.projection?.visibleRegion?.latLngBounds?.center
+        centerPosition?.let {
+            geocodeRepository.retrieveAddress(centerPosition.toCoordinate())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    Timber.v("Address found $it")
+                }, {
+                    Timber.e(it, "Error getting the address")
+                })
+        }
     }
 
     override fun onDestroy() {

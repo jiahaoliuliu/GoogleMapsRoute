@@ -30,7 +30,7 @@ interface GoogleGeocodeAPIService {
      */
     @GET("https://maps.googleapis.com/maps/api/geocode/json")
     fun getAddressBasedOnLocation(@Query("language") language: String = LANGUAGE_EN,
-                               @Query("latlng") location: String,
+                               @Query("latlng", encoded=true) location: String,
                                @Query("key") key: String = GOOGLE_API_KEY
     ): Single<String>
 }
