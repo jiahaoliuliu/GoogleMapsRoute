@@ -49,7 +49,15 @@ abstract class AbsBaseMapFragment: Fragment() {
             it.setOnCameraIdleListener {
                 onMapCameraIdle()
             }
+
+            it.setOnPoiClickListener { pointOfInterest ->
+                onPointOfInterestClicked(pointOfInterest)
+            }
         }
+    }
+
+    open fun onPointOfInterestClicked(pointOfInterest: PointOfInterest) {
+        // Not do anything. This method is mean to be overriden
     }
 
     abstract fun onMapSynchronized()

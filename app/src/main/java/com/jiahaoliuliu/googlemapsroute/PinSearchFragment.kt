@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.PointOfInterest
 import com.jiahaoliuliu.datalayer.GeocodeRepository
 import com.jiahaoliuliu.entity.Address
 import com.jiahaoliuliu.entity.Coordinate
@@ -29,6 +30,7 @@ class PinSearchFragment: AbsBaseMapFragment() {
     private lateinit var binding: FragmentPingSearchBinding
     private var finalPosition: Coordinate? = null
     private lateinit var onLocationSetByPinListener: OnLocationSetByPinListener
+    private var mapsMovingToPointOfInterest = false
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -65,6 +67,13 @@ class PinSearchFragment: AbsBaseMapFragment() {
     }
 
     override fun onMapCameraIdle() {
+        // If the map was moving because the user has clicked on a point of interest, then not do anything
+        if (mapsMovingToPointOfInterest) {
+            Timber.v("Map moved because the user has clicked on a point of interest")
+            mapsMovingToPointOfInterest = false
+            return
+        }
+
         val centerPosition = googleMap?.projection?.visibleRegion?.latLngBounds?.center
         centerPosition?.let {
             finalPosition = it.toCoordinate()
@@ -84,6 +93,19 @@ class PinSearchFragment: AbsBaseMapFragment() {
         if (binding.addressFound.visibility == View.GONE) {
             binding.addressFound.visibility = View.VISIBLE
         }
+    }
+
+    override fun onPointOfInterestClicked(pointOfInterest: PointOfInterest) {
+        // Move the camera
+        mapsMovingToPointOfInterest = true
+        googleMap?.animateCamera(CameraUpdateFactory.newLatLng(pointOfInterest.latLng))
+
+        // Update the title
+        binding.addressFound.text = pointOfInterest.name
+        binding.addressFound.visibility = View.VISIBLE
+
+        // Update the final location
+        finalPosition = pointOfInterest.latLng.toCoordinate()
     }
 
     override fun onDestroy() {
