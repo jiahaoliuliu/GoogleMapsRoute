@@ -29,11 +29,13 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
         private const val TIME_DIFFERENCE_FOR_INPUT = 1000L
         private const val ARGUMENT_KEY_ADDRESS = "Address"
         private const val ARGUMENT_KEY_CALLER = "Caller"
+        private const val ARGUMENT_KEY_IS_SPEECH_TO_TEXT = "SpeedToText"
 
-        fun newInstance(address: String, caller: Caller): LocationSearchFragment {
+        fun newInstance(address: String, caller: Caller, isSpeechToText: Boolean = false): LocationSearchFragment {
             val bundle = Bundle()
             bundle.putString(ARGUMENT_KEY_ADDRESS, address)
             bundle.putString(ARGUMENT_KEY_CALLER, caller.toString())
+            bundle.putBoolean(ARGUMENT_KEY_IS_SPEECH_TO_TEXT, isSpeechToText)
             val locationSearchFragment = LocationSearchFragment()
             locationSearchFragment.arguments = bundle
             return locationSearchFragment
@@ -44,6 +46,7 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
     private lateinit var binding: FragmentLocationSearchBinding
     private var addressToBeFound: String? = null
     private var caller: Caller = Caller.ORIGIN
+    private var isSpeechToText: Boolean = false
     private var userInputTimer: CountDownTimer? = null
     private lateinit var locationListAdapter: LocationsListAdapter
     private lateinit var onLocationFoundListener: OnLocationFoundListener
@@ -62,6 +65,7 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
         arguments?.let {
             addressToBeFound = it.getString(ARGUMENT_KEY_ADDRESS)
             caller = Caller.valueOf(it.getString(ARGUMENT_KEY_CALLER)!!)
+            isSpeechToText = it.getBoolean(ARGUMENT_KEY_IS_SPEECH_TO_TEXT)
         }
     }
 
@@ -113,7 +117,9 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
 
             placesRepository.retrievePredictions(it)
                 .subscribeOn(Schedulers.io())
+                .doOnSubscribe { binding.progressBar.visibility = View.VISIBLE }
                 .observeOn(AndroidSchedulers.mainThread())
+                .doOnTerminate { binding.progressBar.visibility = View.GONE }
                 .subscribe({ placesList ->
                     locationListAdapter.updatePlacesList(placesList)
                     activity?.let {fragmentActivity ->
