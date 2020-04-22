@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.PointOfInterest
 import com.jiahaoliuliu.datalayer.GeocodeRepository
 import com.jiahaoliuliu.entity.Address
 import com.jiahaoliuliu.entity.Coordinate
@@ -84,6 +85,18 @@ class PinSearchFragment: AbsBaseMapFragment() {
         if (binding.addressFound.visibility == View.GONE) {
             binding.addressFound.visibility = View.VISIBLE
         }
+    }
+
+    override fun onPointOfInterestClicked(pointOfInterest: PointOfInterest) {
+        // Move the camera
+        googleMap?.animateCamera(CameraUpdateFactory.newLatLng(pointOfInterest.latLng))
+
+        // Update the title
+        binding.addressFound.text = pointOfInterest.name
+        binding.addressFound.visibility = View.VISIBLE
+
+        // Update the final location
+        finalPosition = pointOfInterest.latLng.toCoordinate()
     }
 
     override fun onDestroy() {
