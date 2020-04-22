@@ -6,33 +6,47 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="10dp">
-        <EditText
-            android:id="@+id/address_input"
+        <LinearLayout
+            android:id="@+id/search_bar"
             android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:background="@android:color/white"
-            android:textColor="@android:color/black"
-            android:singleLine="true"
-            android:inputType="text"
-            android:hint="Enter the name of the location"
-            android:textColorHint="@android:color/darker_gray"
-            android:autofillHints="Enter your destination"
-            tools:text="My location"
-            android:visibility="visible"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintVertical_bias="0"/>
+            app:layout_constraintVertical_bias="0"
+            >
+            <EditText
+                android:id="@+id/address_input"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:textColor="@android:color/black"
+                android:singleLine="true"
+                android:inputType="text"
+                android:hint="Enter the name of the location"
+                android:textColorHint="@android:color/darker_gray"
+                android:autofillHints="Enter your destination"
+                tools:text="My location"/>
+            <ImageView
+                android:id="@+id/voice_search_icon"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:background="@drawable/ic_voice_search"
+                android:contentDescription="speech to text" />
+        </LinearLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/location_results_list"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="10dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintTop_toBottomOf="@+id/address_input"
+            app:layout_constraintTop_toBottomOf="@+id/search_bar"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>

@@ -62,8 +62,9 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
         supportFragmentManager.beginTransaction().replace(R.id.container, pinSearchFragment).commit()
     }
 
-    override fun onSearchLocationByVoiceRequested() {
-        // TODO
+    override fun onSearchLocationByVoiceRequested(caller: Caller) {
+        locationSearchFragment = LocationSearchFragment.newInstance("", caller, true)
+        supportFragmentManager.beginTransaction().replace(R.id.container, locationSearchFragment!!).commit()
     }
 
     override fun onLocationFound(placeId: String, caller: Caller) {

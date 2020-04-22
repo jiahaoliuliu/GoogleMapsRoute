@@ -1,21 +1,28 @@
 package com.jiahaoliuliu.googlemapsroute
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.speech.RecognizerIntent
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.jiahaoliuliu.datalayer.PlacesRepository
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentLocationSearchBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
+import java.util.*
 import javax.inject.Inject
 
 
@@ -30,6 +37,8 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
         private const val ARGUMENT_KEY_ADDRESS = "Address"
         private const val ARGUMENT_KEY_CALLER = "Caller"
         private const val ARGUMENT_KEY_IS_SPEECH_TO_TEXT = "SpeedToText"
+        private const val REQUEST_CODE_SPEECH_TO_TEXT = 10001
+        private const val PERMISSIONS_RECORD_AUDIO = 10002
 
         fun newInstance(address: String, caller: Caller, isSpeechToText: Boolean = false): LocationSearchFragment {
             val bundle = Bundle()
@@ -104,8 +113,15 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
             }
         })
 
+        binding.voiceSearchIcon.setOnClickListener { checkPermissionForSpeechToText() }
+
         addressToBeFound?.let {
             binding.addressInput.setText(addressToBeFound)
+        }
+
+        // If it is speech to text
+        if (isSpeechToText) {
+            checkPermissionForSpeechToText()
         }
     }
 
@@ -133,6 +149,63 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
 
     override fun onPlaceClicked(id: String) {
         onLocationFoundListener.onLocationFound(id, caller)
+    }
+
+
+    private fun checkPermissionForSpeechToText() {
+        if (ContextCompat.checkSelfPermission(activity as Activity,
+                android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            startSpeechToTextDialog()
+        } else {
+            requestPermissions(
+                arrayOf(android.Manifest.permission.RECORD_AUDIO),
+                PERMISSIONS_RECORD_AUDIO
+            )
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>,
+                                            grantResults: IntArray) {
+        when (requestCode) {
+            REQUEST_CODE_SPEECH_TO_TEXT -> {
+                // If request is cancelled, the result arrays are empty
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startSpeechToTextDialog()
+                } else {
+                    Toast.makeText(activity,
+                        "You need to allow the app to record audio in order to use speech to text",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+
+    private fun startSpeechToTextDialog() {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+        intent.putExtra(
+            RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+            RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+        )
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Where do you comes from?")
+        try {
+            startActivityForResult(intent, REQUEST_CODE_SPEECH_TO_TEXT)
+        } catch (a: ActivityNotFoundException) {
+            Toast.makeText(activity,
+                "Speed to text not supported",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_CODE_SPEECH_TO_TEXT) {
+            if (resultCode == Activity.RESULT_OK && null != data) {
+                val results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                binding.addressInput.setText(results[0])
+            }
+        }
     }
 }
 

@@ -56,7 +56,7 @@
                 android:layout_height="35dp"
                 android:background="@drawable/ic_voice_search"
                 android:layout_gravity="start"
-                android:contentDescription="pin_icon" />
+                android:contentDescription="speech to text" />
         </LinearLayout>
 
         <FrameLayout

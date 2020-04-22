@@ -129,5 +129,5 @@ interface SearchLocationListener {
 
     fun onSearchLocationByPinRequested()
 
-    fun onSearchLocationByVoiceRequested()
+    fun onSearchLocationByVoiceRequested(caller: Caller)
 }
