@@ -65,6 +65,7 @@ class OriginFragment: AbsBaseMapFragment() {
             onSearchLocationListener.onSearchLocationByAddressRequested(
                 binding.addressInput.text.toString(), Caller.ORIGIN) }
         binding.pinLocationIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByPinRequested()}
+        binding.voiceSearchIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByVoiceRequested()}
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity!!)
         // The super class will try to find the map and synchronize it
         super.onActivityCreated(savedInstanceState)
