@@ -26,23 +26,32 @@ import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import javax.inject.Inject
 
-class OriginFragment: AbsBaseMapFragment() {
+class OriginFragment(): AbsBaseMapFragment() {
 
     companion object {
         private const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1000
         private val DEFAULT_LOCATION = LatLng(25.276, 55.296)
         private const val DEFAULT_ZOOM = 15F
         private val compositeDisposable = CompositeDisposable()
+        private const val ARGUMENT_INITIAL_LOCATION = "Argument initial location"
+
+        fun newInstance(initialLocation: Coordinate): OriginFragment {
+            val bundle = Bundle()
+            bundle.putParcelable(ARGUMENT_INITIAL_LOCATION, initialLocation)
+            val originFragment = OriginFragment()
+            originFragment.arguments = bundle
+            return originFragment
+        }
     }
 
     @Inject lateinit var placesRepository: PlacesRepository
     private lateinit var binding: FragmentOriginBinding
     private lateinit var onSearchLocationListener: SearchLocationListener
-    private var isLocationPermissionAlreadyAskedToUser = false
     private var locationPermissionGranted = false
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private var initialLocation: Coordinate? = null
     private var initialLocationMarker: Marker? = null
+    private var initialPlaceId: String? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -59,8 +68,21 @@ class OriginFragment: AbsBaseMapFragment() {
         return binding.root
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            if (it.containsKey(ARGUMENT_INITIAL_LOCATION)) {
+                initialLocation = it.getParcelable(ARGUMENT_INITIAL_LOCATION)
+            }
+        }
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         MainApplication.getMainComponent()?.inject(this)
+        initialLocation?.let {
+            directionRepository.initialLocation = initialLocation
+            binding.searchLayout.visibility = View.VISIBLE
+        }
         binding.addressInput.setOnClickListener {
             onSearchLocationListener.onSearchLocationByAddressRequested(
                 binding.addressInput.text.toString(), Caller.ORIGIN) }
@@ -77,19 +99,16 @@ class OriginFragment: AbsBaseMapFragment() {
             CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM)
         )
 
-        if (!isLocationPermissionAlreadyAskedToUser) {
-            isLocationPermissionAlreadyAskedToUser = true
-            getLocationPermission()
-        } else {
-            initialLocation?.let {
-                setMarkerToInitialLocation()
-                boundMapToLocations(it.toLatLng(), DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng())
-                drawRouteBetweenOriginAndDestination(
-                    it, DirectionRepository.DXB_AIRPORT_LOCATION, false
-                )
-            }
+        getLocationPermission()
+    }
 
-            binding.searchLayout.visibility = View.VISIBLE
+    private fun drawInitialPositionIfAvailable() {
+        initialLocation?.let {
+            setMarkerToInitialLocation()
+            boundMapToLocations(it.toLatLng(), DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng())
+            drawRouteBetweenOriginAndDestination(
+                it, DirectionRepository.DXB_AIRPORT_LOCATION, false
+            )
         }
     }
 
@@ -136,6 +155,7 @@ class OriginFragment: AbsBaseMapFragment() {
         }
 
         binding.searchLayout.visibility = View.VISIBLE
+        drawInitialPositionIfAvailable()
     }
 
     private fun updateLocationUI() {
@@ -191,6 +211,8 @@ class OriginFragment: AbsBaseMapFragment() {
     }
 
     fun showRouteFromLocation(placeId: String) {
+        this.initialPlaceId = placeId
+
         val disposable = placesRepository.retrievePlaceDetails(placeId)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -200,12 +222,6 @@ class OriginFragment: AbsBaseMapFragment() {
                 directionRepository.initialLocation = initialLocation
             }, { throwable -> Timber.e(throwable, "Error retrieving place details") })
         compositeDisposable.add(disposable)
-    }
-
-    fun showRouteFromLocation(location: Coordinate) {
-        initialLocation = location
-        directionRepository.initialLocation = initialLocation
-        binding.searchLayout.visibility = View.VISIBLE
     }
 
     override fun showProgressScreen(showIt: Boolean) {

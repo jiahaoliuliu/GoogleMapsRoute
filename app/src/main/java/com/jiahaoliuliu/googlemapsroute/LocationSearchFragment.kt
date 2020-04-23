@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment
 import com.jiahaoliuliu.datalayer.PlacesRepository
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentLocationSearchBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import java.util.*
@@ -39,6 +40,7 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
         private const val ARGUMENT_KEY_IS_SPEECH_TO_TEXT = "SpeedToText"
         private const val REQUEST_CODE_SPEECH_TO_TEXT = 10001
         private const val PERMISSIONS_RECORD_AUDIO = 10002
+        private val compositeDisposable = CompositeDisposable()
 
         fun newInstance(address: String, caller: Caller, isSpeechToText: Boolean = false): LocationSearchFragment {
             val bundle = Bundle()
@@ -151,7 +153,6 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
         onLocationFoundListener.onLocationFound(id, caller)
     }
 
-
     private fun checkPermissionForSpeechToText() {
         if (ContextCompat.checkSelfPermission(activity as Activity,
                 android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
@@ -206,6 +207,11 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
                 binding.addressInput.setText(results[0])
             }
         }
+    }
+
+    override fun onDestroy() {
+        compositeDisposable.clear()
+        super.onDestroy()
     }
 }
 

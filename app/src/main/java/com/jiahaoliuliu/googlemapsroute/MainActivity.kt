@@ -12,7 +12,7 @@ import com.jiahaoliuliu.googlemapsroute.databinding.ActivityMainBinding
 class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoundListener, OnLocationSetByPinListener {
 
     private lateinit var binding: ActivityMainBinding
-    private val originFragment = OriginFragment()
+    private var originFragment: OriginFragment? = null
     private val destinationFragment = DestinationFragment()
     private var locationSearchFragment: LocationSearchFragment? = null
 
@@ -45,7 +45,10 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
     }
 
     private fun showOriginScreen() {
-        supportFragmentManager.beginTransaction().replace(R.id.container, originFragment).commit()
+        if (originFragment == null) {
+            originFragment = OriginFragment()
+        }
+        supportFragmentManager.beginTransaction().replace(R.id.container, originFragment!!).commit()
     }
 
     private fun showDestinationScreen() {
@@ -70,7 +73,7 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
     override fun onLocationFound(placeId: String, caller: Caller) {
         when (caller) {
             Caller.ORIGIN -> {
-                originFragment.showRouteFromLocation(placeId)
+                originFragment?.showRouteFromLocation(placeId)
                 showOriginScreen()
             }
             Caller.DESTINATION -> {
@@ -81,7 +84,7 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
     }
 
     override fun onLocationSetByPin(locationSetByPin: Coordinate) {
-        originFragment.showRouteFromLocation(locationSetByPin)
+        originFragment = OriginFragment.newInstance(locationSetByPin)
         showOriginScreen()
     }
 }
