@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.jiahaoliuliu.datalayer.DirectionRepository
@@ -42,6 +43,7 @@ class DestinationFragment: AbsBaseMapFragment() {
     private lateinit var onSearchLocationListener: SearchLocationListener
     private var finalDestination: PlaceDetails? = null
     private var finalLocation: Coordinate? = null
+    private var finalLocationMarker: Marker? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -84,7 +86,7 @@ class DestinationFragment: AbsBaseMapFragment() {
         finalLocation?.let {
             drawRouteBetweenOriginAndDestination(
                 DirectionRepository.BALI_AIRPORT_LOCATION, it)
-
+            setMarkerToFinalLocation()
             directionRepository.initialLocation?.let {
                 binding.showFullRouteButton.visibility = View.VISIBLE
             }
@@ -111,6 +113,7 @@ class DestinationFragment: AbsBaseMapFragment() {
             .subscribe({ placeDetails ->
                 finalDestination = placeDetails
                 binding.addressInput.text = placeDetails.name
+                setMarkerToFinalLocation()
                 drawRouteBetweenOriginAndDestination(
                     DirectionRepository.BALI_AIRPORT_LOCATION, placeDetails.location
                 )
@@ -137,6 +140,20 @@ class DestinationFragment: AbsBaseMapFragment() {
 
                 // Show time
                 addMarkerBetweenLocations("15h 40mins", arrayListOf(DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng(), DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng()))
+            }
+        }
+    }
+
+    private fun setMarkerToFinalLocation() {
+        googleMap?.let {googleMapNotNull ->
+            finalLocation?.let {
+                finalLocationMarker?.remove()
+                googleMapNotNull.moveCamera(CameraUpdateFactory.newLatLngZoom(it.toLatLng(), DEFAULT_ZOOM
+                ))
+                val markerOptions = MarkerOptions()
+                markerOptions.position(it.toLatLng())
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                finalLocationMarker = googleMapNotNull.addMarker(markerOptions)
             }
         }
     }
