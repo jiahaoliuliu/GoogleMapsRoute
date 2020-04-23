@@ -6,7 +6,6 @@ import androidx.databinding.DataBindingUtil
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.jiahaoliuliu.entity.Coordinate
-import com.jiahaoliuliu.googlemapsroute.LocationSearchFragment.Caller
 import com.jiahaoliuliu.googlemapsroute.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoundListener, OnLocationSetByPinListener {
@@ -60,7 +59,7 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
         supportFragmentManager.beginTransaction().replace(R.id.container, locationSearchFragment!!).commit()
     }
 
-    override fun onSearchLocationByPinRequested() {
+    override fun onSearchLocationByPinRequested(caller: Caller) {
         val pinSearchFragment = PinSearchFragment()
         supportFragmentManager.beginTransaction().replace(R.id.container, pinSearchFragment).commit()
     }

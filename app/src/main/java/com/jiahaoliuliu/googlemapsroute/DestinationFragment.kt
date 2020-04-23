@@ -13,7 +13,6 @@ import com.google.android.gms.maps.model.PolylineOptions
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.datalayer.PlacesRepository
 import com.jiahaoliuliu.entity.PlaceDetails
-import com.jiahaoliuliu.googlemapsroute.LocationSearchFragment.Caller
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentDestinationBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -122,13 +121,4 @@ class DestinationFragment: AbsBaseMapFragment() {
         compositeDisposable.clear()
         super.onDestroy()
     }
-}
-
-interface SearchLocationListener {
-
-    fun onSearchLocationByAddressRequested(address: String, caller: Caller)
-
-    fun onSearchLocationByPinRequested()
-
-    fun onSearchLocationByVoiceRequested(caller: Caller)
 }

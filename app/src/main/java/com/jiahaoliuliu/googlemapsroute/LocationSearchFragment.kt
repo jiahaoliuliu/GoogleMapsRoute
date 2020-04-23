@@ -29,10 +29,6 @@ import javax.inject.Inject
 
 class LocationSearchFragment: Fragment(), OnPlaceClickListener {
 
-    enum class Caller {
-        ORIGIN, DESTINATION
-    }
-
     companion object {
         private const val TIME_DIFFERENCE_FOR_INPUT = 1000L
         private const val ARGUMENT_KEY_ADDRESS = "Address"
@@ -217,5 +213,5 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
 
 interface OnLocationFoundListener {
 
-    fun onLocationFound(id: String, caller: LocationSearchFragment.Caller)
+    fun onLocationFound(id: String, caller: Caller)
 }
