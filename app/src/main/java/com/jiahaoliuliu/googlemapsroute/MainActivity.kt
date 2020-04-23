@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
     override fun onLocationFound(placeId: String, caller: Caller) {
         when (caller) {
             Caller.ORIGIN -> {
-                originFragment?.showRouteFromLocation(placeId)
+                originFragment = OriginFragment.newInstance(placeId)
                 showOriginScreen()
             }
             Caller.DESTINATION -> {

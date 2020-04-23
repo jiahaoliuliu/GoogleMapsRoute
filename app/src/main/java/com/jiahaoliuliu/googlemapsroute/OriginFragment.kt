@@ -34,10 +34,19 @@ class OriginFragment(): AbsBaseMapFragment() {
         private const val DEFAULT_ZOOM = 15F
         private val compositeDisposable = CompositeDisposable()
         private const val ARGUMENT_INITIAL_LOCATION = "Argument initial location"
+        private const val ARGUMENT_INITIAL_PLACE_ID = "Argument place id"
 
         fun newInstance(initialLocation: Coordinate): OriginFragment {
             val bundle = Bundle()
             bundle.putParcelable(ARGUMENT_INITIAL_LOCATION, initialLocation)
+            val originFragment = OriginFragment()
+            originFragment.arguments = bundle
+            return originFragment
+        }
+
+        fun newInstance(placeId: String): OriginFragment {
+            val bundle = Bundle()
+            bundle.putString(ARGUMENT_INITIAL_PLACE_ID, placeId)
             val originFragment = OriginFragment()
             originFragment.arguments = bundle
             return originFragment
@@ -74,6 +83,10 @@ class OriginFragment(): AbsBaseMapFragment() {
             if (it.containsKey(ARGUMENT_INITIAL_LOCATION)) {
                 initialLocation = it.getParcelable(ARGUMENT_INITIAL_LOCATION)
             }
+
+            if (it.containsKey(ARGUMENT_INITIAL_PLACE_ID)) {
+                initialPlaceId = it.getString(ARGUMENT_INITIAL_PLACE_ID)
+            }
         }
     }
 
@@ -109,6 +122,23 @@ class OriginFragment(): AbsBaseMapFragment() {
             drawRouteBetweenOriginAndDestination(
                 it, DirectionRepository.DXB_AIRPORT_LOCATION, false
             )
+        } ?:run {
+            initialPlaceId?.let {
+                val disposable = placesRepository.retrievePlaceDetails(it)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe({ placeDetails ->
+                        binding.addressInput.text = placeDetails.name
+                        initialLocation = placeDetails.location
+                        directionRepository.initialLocation = initialLocation
+                        setMarkerToInitialLocation()
+                        boundMapToLocations(placeDetails.location.toLatLng(), DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng())
+                        drawRouteBetweenOriginAndDestination(
+                            placeDetails.location, DirectionRepository.DXB_AIRPORT_LOCATION, false
+                        )
+                    }, { throwable -> Timber.e(throwable, "Error retrieving place details") })
+                compositeDisposable.add(disposable)
+            }
         }
     }
 
@@ -208,20 +238,6 @@ class OriginFragment(): AbsBaseMapFragment() {
                 initialLocationMarker = googleMapNotNull.addMarker(markerOptions)
             }
         }
-    }
-
-    fun showRouteFromLocation(placeId: String) {
-        this.initialPlaceId = placeId
-
-        val disposable = placesRepository.retrievePlaceDetails(placeId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ placeDetails ->
-                binding.addressInput.text = placeDetails.name
-                initialLocation = placeDetails.location
-                directionRepository.initialLocation = initialLocation
-            }, { throwable -> Timber.e(throwable, "Error retrieving place details") })
-        compositeDisposable.add(disposable)
     }
 
     override fun showProgressScreen(showIt: Boolean) {
