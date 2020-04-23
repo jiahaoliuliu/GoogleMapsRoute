@@ -54,12 +54,13 @@ class DestinationFragment: AbsBaseMapFragment() {
             onSearchLocationListener.onSearchLocationByAddressRequested(
                 binding.addressInput.text.toString(), Caller.DESTINATION) }
         binding.showFullRouteButton.setOnClickListener{showFullRoute()}
+        binding.voiceSearchIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByVoiceRequested(Caller.DESTINATION)}
         super.onActivityCreated(savedInstanceState)
     }
 
     override fun onMapSynchronized() {
         showAirportLocation()
-        binding.addressInput.visibility = View.VISIBLE
+        binding.searchLayout.visibility = View.VISIBLE
     }
 
     private fun showAirportLocation() {
