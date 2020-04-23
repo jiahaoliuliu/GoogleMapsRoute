@@ -12,7 +12,7 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
 
     private lateinit var binding: ActivityMainBinding
     private var originFragment: OriginFragment? = null
-    private val destinationFragment = DestinationFragment()
+    private var destinationFragment: DestinationFragment? = null
     private var locationSearchFragment: LocationSearchFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,7 +51,11 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
     }
 
     private fun showDestinationScreen() {
-        supportFragmentManager.beginTransaction().replace(R.id.container, destinationFragment).commit()
+        if (destinationFragment == null) {
+            destinationFragment = DestinationFragment()
+        }
+
+        supportFragmentManager.beginTransaction().replace(R.id.container, destinationFragment!!).commit()
     }
 
     override fun onSearchLocationByAddressRequested(address: String, caller: Caller) {
@@ -60,7 +64,7 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
     }
 
     override fun onSearchLocationByPinRequested(caller: Caller) {
-        val pinSearchFragment = PinSearchFragment()
+        val pinSearchFragment = PinSearchFragment.newInstance(caller)
         supportFragmentManager.beginTransaction().replace(R.id.container, pinSearchFragment).commit()
     }
 
@@ -76,14 +80,23 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
                 showOriginScreen()
             }
             Caller.DESTINATION -> {
-                destinationFragment.showRouteToLocation(placeId)
+                destinationFragment?.showRouteToLocation(placeId)
                 showDestinationScreen()
             }
         }
     }
 
-    override fun onLocationSetByPin(locationSetByPin: Coordinate) {
-        originFragment = OriginFragment.newInstance(locationSetByPin)
-        showOriginScreen()
+    override fun onLocationSetByPin(locationSetByPin: Coordinate, caller: Caller) {
+        when(caller) {
+            Caller.ORIGIN -> {
+                originFragment = OriginFragment.newInstance(locationSetByPin)
+                showOriginScreen()
+            }
+            Caller.DESTINATION -> {
+                destinationFragment = DestinationFragment.newInstance(locationSetByPin)
+                showDestinationScreen()
+            }
+        }
+
     }
 }

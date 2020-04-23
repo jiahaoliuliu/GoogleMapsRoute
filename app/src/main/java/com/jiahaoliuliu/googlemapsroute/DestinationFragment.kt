@@ -12,6 +12,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.datalayer.PlacesRepository
+import com.jiahaoliuliu.entity.Coordinate
 import com.jiahaoliuliu.entity.PlaceDetails
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentDestinationBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -25,12 +26,22 @@ class DestinationFragment: AbsBaseMapFragment() {
     companion object {
         private const val DEFAULT_ZOOM = 15F
         private val compositeDisposable = CompositeDisposable()
+        private const val ARGUMENT_FINAL_LOCATION = "Argument final location"
+
+        fun newInstance(finalLocation: Coordinate): DestinationFragment {
+            val bundle = Bundle()
+            bundle.putParcelable(ARGUMENT_FINAL_LOCATION, finalLocation)
+            val destinationFragment = DestinationFragment()
+            destinationFragment.arguments = bundle
+            return destinationFragment
+        }
     }
 
     @Inject lateinit var placesRepository: PlacesRepository
     private lateinit var binding: FragmentDestinationBinding
     private lateinit var onSearchLocationListener: SearchLocationListener
     private var finalDestination: PlaceDetails? = null
+    private var finalLocation: Coordinate? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -41,8 +52,17 @@ class DestinationFragment: AbsBaseMapFragment() {
         }
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            if (it.containsKey(ARGUMENT_FINAL_LOCATION)) {
+                finalLocation = it.getParcelable(ARGUMENT_FINAL_LOCATION)
+            }
+        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?): View? {
+                              savedInstanceState: Bundle?): View? {
         binding = FragmentDestinationBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -54,12 +74,21 @@ class DestinationFragment: AbsBaseMapFragment() {
                 binding.addressInput.text.toString(), Caller.DESTINATION) }
         binding.showFullRouteButton.setOnClickListener{showFullRoute()}
         binding.voiceSearchIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByVoiceRequested(Caller.DESTINATION)}
+        binding.pinLocationIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByPinRequested(Caller.DESTINATION)}
         super.onActivityCreated(savedInstanceState)
     }
 
     override fun onMapSynchronized() {
         showAirportLocation()
         binding.searchLayout.visibility = View.VISIBLE
+        finalLocation?.let {
+            drawRouteBetweenOriginAndDestination(
+                DirectionRepository.BALI_AIRPORT_LOCATION, it)
+
+            directionRepository.initialLocation?.let {
+                binding.showFullRouteButton.visibility = View.VISIBLE
+            }
+        }
     }
 
     private fun showAirportLocation() {
