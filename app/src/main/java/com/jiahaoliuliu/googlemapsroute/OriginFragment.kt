@@ -11,10 +11,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.datalayer.PlacesRepository
 import com.jiahaoliuliu.entity.Coordinate
@@ -57,8 +54,6 @@ class OriginFragment: AbsBaseMapFragment() {
     private lateinit var onSearchLocationListener: SearchLocationListener
     private var locationPermissionGranted = false
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    private var initialLocation: Coordinate? = null
-    private var initialLocationMarker: Marker? = null
     private var initialPlaceId: String? = null
 
     override fun onAttach(context: Context) {
@@ -78,6 +73,11 @@ class OriginFragment: AbsBaseMapFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setFinalLocation(DirectionRepository.DXB_AIRPORT_LOCATION)
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        MainApplication.getMainComponent()?.inject(this)
         arguments?.let {
             it.getParcelable<Coordinate>(ARGUMENT_INITIAL_LOCATION)?.let {initialLocation->
                 setInitialLocation(initialLocation)
@@ -86,14 +86,6 @@ class OriginFragment: AbsBaseMapFragment() {
             if (it.containsKey(ARGUMENT_INITIAL_PLACE_ID)) {
                 initialPlaceId = it.getString(ARGUMENT_INITIAL_PLACE_ID)
             }
-        }
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        MainApplication.getMainComponent()?.inject(this)
-        initialLocation?.let {
-            directionRepository.initialLocation = initialLocation
-            binding.searchLayout.visibility = View.VISIBLE
         }
         binding.addressInput.setOnClickListener {
             onSearchLocationListener.onSearchLocationByAddressRequested(
@@ -111,33 +103,10 @@ class OriginFragment: AbsBaseMapFragment() {
             CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM)
         )
 
-        getLocationPermission()
-    }
-
-    private fun drawInitialPositionIfAvailable() {
-        initialLocation?.let {
-            setMarkerToInitialLocation()
-//            boundMapToLocations(it.toLatLng(), DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng())
-            drawRouteBetweenInitialAndFinalLocations(
-                it, DirectionRepository.DXB_AIRPORT_LOCATION, false
-            )
-        } ?:run {
-            initialPlaceId?.let {
-                val disposable = placesRepository.retrievePlaceDetails(it)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({ placeDetails ->
-                        binding.addressInput.text = placeDetails.name
-                        initialLocation = placeDetails.location
-                        directionRepository.initialLocation = initialLocation
-                        setMarkerToInitialLocation()
-                        boundMapToLocations(placeDetails.location.toLatLng(), DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng())
-                        drawRouteBetweenInitialAndFinalLocations(
-                            placeDetails.location, DirectionRepository.DXB_AIRPORT_LOCATION, false
-                        )
-                    }, { throwable -> Timber.e(throwable, "Error retrieving place details") })
-                compositeDisposable.add(disposable)
-            }
+        if (!hasInitialLocation()) {
+            getLocationPermission()
+        } else {
+            binding.searchLayout.visibility = View.VISIBLE
         }
     }
 
@@ -175,16 +144,22 @@ class OriginFragment: AbsBaseMapFragment() {
     }
 
     private fun onLocationPermissionNegated() {
-        googleMap?.let {googleMapNotNull ->
-            initialLocation?.let { lastKnownLocationNotNull ->
-                googleMapNotNull.moveCamera(
-                    CameraUpdateFactory.newLatLngZoom(lastKnownLocationNotNull.toLatLng(), DEFAULT_ZOOM))
-            }
-            googleMapNotNull.uiSettings.isMyLocationButtonEnabled = false
-        }
-
         binding.searchLayout.visibility = View.VISIBLE
-        drawInitialPositionIfAvailable()
+        initialPlaceId?.let {
+            drawInitialLocationBasedOnInitialPlaceId(it)
+        }
+    }
+
+    private fun drawInitialLocationBasedOnInitialPlaceId(initialPlaceId: String) {
+        // Initial location cannot coexist with the initial location
+        val disposable = placesRepository.retrievePlaceDetails(initialPlaceId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ placeDetails ->
+                binding.addressInput.text = placeDetails.name
+                setInitialLocation(placeDetails.location)
+            }, { throwable -> Timber.e(throwable, "Error retrieving place details") })
+        compositeDisposable.add(disposable)
     }
 
     private fun updateLocationUI() {
@@ -206,35 +181,14 @@ class OriginFragment: AbsBaseMapFragment() {
             val locationResult = fusedLocationProviderClient.lastLocation
             locationResult.addOnCompleteListener { task ->
                 if (task.isSuccessful && task.result != null) {
-                    initialLocation = (task.result as Location).toCoordinate()
-                    directionRepository.initialLocation = initialLocation
-                    setMarkerToInitialLocation()
-                    drawDistanceToTheAirport()
+                    val initialLocation = (task.result as Location).toCoordinate()
+                    setInitialLocation(initialLocation)
                 } else {
                     // TODO: Subscribe to updates from fused service
                     Timber.w(task.exception,"Current location is null. Using defaults.");
                     it.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM))
                     it.uiSettings.isMyLocationButtonEnabled = false
                 }
-            }
-        }
-    }
-
-    private fun drawDistanceToTheAirport() {
-        initialLocation?.let {
-            drawRouteBetweenInitialAndFinalLocations(it, DirectionRepository.DXB_AIRPORT_LOCATION)
-        }
-    }
-
-    private fun setMarkerToInitialLocation() {
-        googleMap?.let {googleMapNotNull ->
-            initialLocation?.let {
-                initialLocationMarker?.remove()
-                googleMapNotNull.moveCamera(CameraUpdateFactory.newLatLngZoom(it.toLatLng(), DEFAULT_ZOOM))
-                val markerOptions = MarkerOptions()
-                markerOptions.position(it.toLatLng())
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                initialLocationMarker = googleMapNotNull.addMarker(markerOptions)
             }
         }
     }
@@ -247,5 +201,10 @@ class OriginFragment: AbsBaseMapFragment() {
     override fun onDestroy() {
         compositeDisposable.clear()
         super.onDestroy()
+    }
+
+    override fun setInitialLocation(initialLocation: Coordinate) {
+        directionRepository?.initialLocation = initialLocation
+        super.setInitialLocation(initialLocation)
     }
 }

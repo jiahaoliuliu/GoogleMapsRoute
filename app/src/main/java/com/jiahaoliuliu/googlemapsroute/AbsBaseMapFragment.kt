@@ -38,8 +38,8 @@ abstract class AbsBaseMapFragment: Fragment() {
     private var markerBetweenLocations: Marker? = null
     private var initialLocation: Coordinate? = null
     private var initialLocationMarker: Marker? = null
-    private val finalLocationMarker: Marker? = null
     private var finalLocation: Coordinate? = null
+    private val finalLocationMarker: Marker? = null
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -91,16 +91,20 @@ abstract class AbsBaseMapFragment: Fragment() {
         // Not do anything. This method is mean to be overriden
     }
 
-    private fun getInitialLocation() = initialLocation
+    fun getInitialLocation() = initialLocation
 
-    fun setInitialLocation(initialLocation: Coordinate) {
+    fun hasInitialLocation() = getInitialLocation() != null
+
+    open fun setInitialLocation(initialLocation: Coordinate) {
         this.initialLocation = initialLocation
         drawRouteBetweenInitialAndFinalLocations()
     }
 
-    private fun getFinalLocation() = finalLocation
+    fun getFinalLocation() = finalLocation
 
-    fun setFinalLocation(finalLocation: Coordinate) {
+    fun hasFinalLocation() = getFinalLocation() != null
+
+    open fun setFinalLocation(finalLocation: Coordinate) {
         this.finalLocation = finalLocation
         drawRouteBetweenInitialAndFinalLocations()
     }

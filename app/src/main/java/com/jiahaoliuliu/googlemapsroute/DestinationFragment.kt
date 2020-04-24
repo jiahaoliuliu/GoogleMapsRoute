@@ -42,7 +42,7 @@ class DestinationFragment: AbsBaseMapFragment() {
     private lateinit var binding: FragmentDestinationBinding
     private lateinit var onSearchLocationListener: SearchLocationListener
     private var finalDestination: PlaceDetails? = null
-    private var finalLocation: Coordinate? = null
+    private var finalLocationTmp: Coordinate? = null
     private var finalLocationMarker: Marker? = null
 
     override fun onAttach(context: Context) {
@@ -58,7 +58,7 @@ class DestinationFragment: AbsBaseMapFragment() {
         super.onCreate(savedInstanceState)
         arguments?.let {
             if (it.containsKey(ARGUMENT_FINAL_LOCATION)) {
-                finalLocation = it.getParcelable(ARGUMENT_FINAL_LOCATION)
+                finalLocationTmp = it.getParcelable(ARGUMENT_FINAL_LOCATION)
             }
         }
     }
@@ -83,7 +83,7 @@ class DestinationFragment: AbsBaseMapFragment() {
     override fun onMapSynchronized() {
         showAirportLocation()
         binding.searchLayout.visibility = View.VISIBLE
-        finalLocation?.let {
+        finalLocationTmp?.let {
             drawRouteBetweenInitialAndFinalLocations(
                 DirectionRepository.BALI_AIRPORT_LOCATION, it)
             setMarkerToFinalLocation()
@@ -146,7 +146,7 @@ class DestinationFragment: AbsBaseMapFragment() {
 
     private fun setMarkerToFinalLocation() {
         googleMap?.let {googleMapNotNull ->
-            finalLocation?.let {
+            finalLocationTmp?.let {
                 finalLocationMarker?.remove()
                 googleMapNotNull.moveCamera(CameraUpdateFactory.newLatLngZoom(it.toLatLng(), DEFAULT_ZOOM
                 ))
