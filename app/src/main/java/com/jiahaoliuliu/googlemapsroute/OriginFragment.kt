@@ -182,6 +182,7 @@ class OriginFragment: AbsBaseMapFragment() {
             locationResult.addOnCompleteListener { task ->
                 if (task.isSuccessful && task.result != null) {
                     val initialLocation = (task.result as Location).toCoordinate()
+                    drawMarker(initialLocation)
                     setInitialLocation(initialLocation)
                 } else {
                     // TODO: Subscribe to updates from fused service
@@ -204,6 +205,7 @@ class OriginFragment: AbsBaseMapFragment() {
     }
 
     override fun setInitialLocation(initialLocation: Coordinate) {
+        drawMarker(initialLocation)
         directionRepository?.initialLocation = initialLocation
         super.setInitialLocation(initialLocation)
     }

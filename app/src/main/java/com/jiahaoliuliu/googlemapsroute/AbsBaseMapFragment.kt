@@ -39,7 +39,7 @@ abstract class AbsBaseMapFragment: Fragment() {
     private var initialLocation: Coordinate? = null
     private var initialLocationMarker: Marker? = null
     private var finalLocation: Coordinate? = null
-    private val finalLocationMarker: Marker? = null
+    private var finalLocationMarker: Marker? = null
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -61,30 +61,32 @@ abstract class AbsBaseMapFragment: Fragment() {
             // Draw initial location marker
             getInitialLocation()?.let { initialLocation ->
                 initialLocationMarker?.remove()
-                drawMarker(initialLocation)
+                initialLocationMarker = drawMarker(initialLocation)
             }
 
             // Draw final location marker
             getFinalLocation()?.let { finalLocation ->
                 finalLocationMarker?.remove()
-                drawMarker(finalLocation)
+                finalLocationMarker = drawMarker(finalLocation)
             }
 
-            // Draw the route between initial location and final location if possible
+            // Draw the route bsetween initial location and final location if possible
             drawRouteBetweenInitialAndFinalLocations(getInitialLocation(), getFinalLocation())
             onMapSynchronized()
         }
     }
 
-    fun drawMarker(location: Coordinate) {
+    fun drawMarker(location: Coordinate): Marker? {
         googleMap?.let {googleMapNotNull ->
             googleMapNotNull.moveCamera(CameraUpdateFactory.newLatLngZoom(location.toLatLng(),
                 DEFAULT_ZOOM))
             val markerOptions = MarkerOptions()
             markerOptions.position(location.toLatLng())
             markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-            initialLocationMarker = googleMapNotNull.addMarker(markerOptions)
+            return googleMapNotNull.addMarker(markerOptions)
         }
+
+        return null
     }
 
     open fun onPointOfInterestClicked(pointOfInterest: PointOfInterest) {
@@ -122,6 +124,10 @@ abstract class AbsBaseMapFragment: Fragment() {
         if (initialLocation == null || finalLocation == null || googleMap == null) {
             return
         }
+
+        // Redraw the markers
+        initialLocationMarker?.remove()
+        initialLocationMarker = drawMarker(initialLocation)
 
         val disposable = directionRepository.calculateDirection(initialLocation, finalLocation)
             .subscribeOn(Schedulers.io())
