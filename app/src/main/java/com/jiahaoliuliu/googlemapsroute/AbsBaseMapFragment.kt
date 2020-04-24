@@ -58,30 +58,30 @@ abstract class AbsBaseMapFragment: Fragment() {
                 onPointOfInterestClicked(pointOfInterest)
             }
 
-            // Draw initial position marker
-            getInitialPosition()?.let {initialPosition ->
+            // Draw initial location marker
+            getInitialLocation()?.let { initialLocation ->
                 initialLocationMarker?.remove()
-                drawMarker(initialPosition)
+                drawMarker(initialLocation)
             }
 
-            // Draw final position marker
-            getFinalPosition()?.let {finalPosition ->
+            // Draw final location marker
+            getFinalLocation()?.let { finalLocation ->
                 finalLocationMarker?.remove()
-                drawMarker(finalPosition)
+                drawMarker(finalLocation)
             }
 
-            // Draw the route between initial position and final position if possible
-            drawRouteBetweenInitialAndFinalPositions(getInitialPosition(), getFinalPosition())
+            // Draw the route between initial location and final location if possible
+            drawRouteBetweenInitialAndFinalLocations(getInitialLocation(), getFinalLocation())
             onMapSynchronized()
         }
     }
 
-    fun drawMarker(position: Coordinate) {
+    fun drawMarker(location: Coordinate) {
         googleMap?.let {googleMapNotNull ->
-            googleMapNotNull.moveCamera(CameraUpdateFactory.newLatLngZoom(position.toLatLng(),
+            googleMapNotNull.moveCamera(CameraUpdateFactory.newLatLngZoom(location.toLatLng(),
                 DEFAULT_ZOOM))
             val markerOptions = MarkerOptions()
-            markerOptions.position(position.toLatLng())
+            markerOptions.position(location.toLatLng())
             markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
             initialLocationMarker = googleMapNotNull.addMarker(markerOptions)
         }
@@ -91,18 +91,18 @@ abstract class AbsBaseMapFragment: Fragment() {
         // Not do anything. This method is mean to be overriden
     }
 
-    private fun getInitialPosition() = initialLocation
+    private fun getInitialLocation() = initialLocation
 
-    fun setInitialPosition(initialPosition: Coordinate) {
-        this.initialLocation = initialPosition
-        drawRouteBetweenInitialAndFinalPositions()
+    fun setInitialLocation(initialLocation: Coordinate) {
+        this.initialLocation = initialLocation
+        drawRouteBetweenInitialAndFinalLocations()
     }
 
-    private fun getFinalPosition() = finalLocation
+    private fun getFinalLocation() = finalLocation
 
-    fun setFinalPosition(finalPosition: Coordinate) {
-        this.finalLocation = finalPosition
-        drawRouteBetweenInitialAndFinalPositions()
+    fun setFinalLocation(finalLocation: Coordinate) {
+        this.finalLocation = finalLocation
+        drawRouteBetweenInitialAndFinalLocations()
     }
 
     abstract fun onMapSynchronized()
@@ -111,21 +111,21 @@ abstract class AbsBaseMapFragment: Fragment() {
         // Not do anything. This method is mean to be overridden
     }
 
-    protected fun drawRouteBetweenInitialAndFinalPositions(initialPosition: Coordinate? = this.initialLocation,
-                                                           destination: Coordinate? = this.finalLocation, boundMapToLocations: Boolean = true,
+    protected fun drawRouteBetweenInitialAndFinalLocations(initialLocation: Coordinate? = this.initialLocation,
+                                                           finalLocation: Coordinate? = this.finalLocation, boundMapToLocations: Boolean = true,
                                                            removePreviousRoute: Boolean = false) {
         // Preconditions
-        if (initialPosition == null || destination == null || googleMap == null) {
+        if (initialLocation == null || finalLocation == null || googleMap == null) {
             return
         }
 
-        val disposable = directionRepository.calculateDirection(initialPosition, destination)
+        val disposable = directionRepository.calculateDirection(initialLocation, finalLocation)
             .subscribeOn(Schedulers.io())
             .doOnSubscribe { showProgressScreen(true) }
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSuccess { showProgressScreen(false) }
             .subscribe({direction ->
-                val positions = PolyUtil.decode(direction.polyline)
+                val locations = PolyUtil.decode(direction.polyline)
                 // Add the lines
                 if (removePreviousRoute) {
                     route?.remove()
@@ -134,10 +134,10 @@ abstract class AbsBaseMapFragment: Fragment() {
                 route = googleMap?.addPolyline(
                     PolylineOptions()
                         .color(ContextCompat.getColor(context!!, R.color.colorRoute))
-                    .addAll(positions))
+                    .addAll(locations))
 
                 // Add the marker
-                markerBetweenLocations = addMarkerBetweenLocations("${direction.duration}(${direction.distance})", positions)
+                markerBetweenLocations = addMarkerBetweenLocations("${direction.duration}(${direction.distance})", locations)
 
                 // Move the camera
                 if (boundMapToLocations) {
@@ -196,21 +196,21 @@ abstract class AbsBaseMapFragment: Fragment() {
         return b
     }
 
-    private fun getMidPoint(positions: List<LatLng>): LatLng {
+    private fun getMidPoint(locations: List<LatLng>): LatLng {
         var totalDistance = 0F
-        for(i in 0 until positions.size-1) {
-            totalDistance += distanceBetweenPoints(positions[i], positions[i+1])
+        for(i in 0 until locations.size-1) {
+            totalDistance += distanceBetweenPoints(locations[i], locations[i+1])
         }
 
         val halfDistance = totalDistance/2
         var distance = 0F
-        for(i in 0 until positions.size-1) {
-            distance += distanceBetweenPoints(positions[i], positions[i+1])
+        for(i in 0 until locations.size-1) {
+            distance += distanceBetweenPoints(locations[i], locations[i+1])
             if(distance>halfDistance) {
-                return LatLng( (positions[i].latitude+positions[i+1].latitude)/2, (positions[i].longitude+positions[i+1].longitude)/2)
+                return LatLng( (locations[i].latitude+locations[i+1].latitude)/2, (locations[i].longitude+locations[i+1].longitude)/2)
             }
         }
-        return positions[positions.size/2]
+        return locations[locations.size/2]
     }
 
     private fun distanceBetweenPoints(p1: LatLng, p2: LatLng): Float {

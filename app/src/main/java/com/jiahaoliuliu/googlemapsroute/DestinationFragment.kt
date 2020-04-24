@@ -84,7 +84,7 @@ class DestinationFragment: AbsBaseMapFragment() {
         showAirportLocation()
         binding.searchLayout.visibility = View.VISIBLE
         finalLocation?.let {
-            drawRouteBetweenInitialAndFinalPositions(
+            drawRouteBetweenInitialAndFinalLocations(
                 DirectionRepository.BALI_AIRPORT_LOCATION, it)
             setMarkerToFinalLocation()
             directionRepository.initialLocation?.let {
@@ -114,7 +114,7 @@ class DestinationFragment: AbsBaseMapFragment() {
                 finalDestination = placeDetails
                 binding.addressInput.text = placeDetails.name
                 setMarkerToFinalLocation()
-                drawRouteBetweenInitialAndFinalPositions(
+                drawRouteBetweenInitialAndFinalLocations(
                     DirectionRepository.BALI_AIRPORT_LOCATION, placeDetails.location
                 )
 
@@ -126,7 +126,7 @@ class DestinationFragment: AbsBaseMapFragment() {
     private fun showFullRoute() {
         directionRepository.initialLocation?.let { lastKnownLocationNotNull ->
             finalDestination?.let {finalDestinationNotNull ->
-                drawRouteBetweenInitialAndFinalPositions(lastKnownLocationNotNull, DirectionRepository.DXB_AIRPORT_LOCATION,
+                drawRouteBetweenInitialAndFinalLocations(lastKnownLocationNotNull, DirectionRepository.DXB_AIRPORT_LOCATION,
                     boundMapToLocations = false, removePreviousRoute = false)
 
                 // Draw a line between the Dubai airport and Bali airport
