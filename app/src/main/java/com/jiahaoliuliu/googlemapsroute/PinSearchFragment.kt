@@ -37,7 +37,7 @@ class PinSearchFragment: AbsBaseMapFragment() {
 
     @Inject lateinit var geocodeRepository: GeocodeRepository
     private lateinit var binding: FragmentPingSearchBinding
-    private var finalPosition: Coordinate? = null
+    private var pointOfInterestLocation: Coordinate? = null
     private lateinit var onLocationSetByPinListener: OnLocationSetByPinListener
     private var mapsMovingToPointOfInterest = false
     private var caller: Caller = Caller.ORIGIN
@@ -73,7 +73,7 @@ class PinSearchFragment: AbsBaseMapFragment() {
     }
 
     private fun setLocation() {
-        finalPosition?.let {
+        pointOfInterestLocation?.let {
             // Return to the activity with the position
             onLocationSetByPinListener.onLocationSetByPin(it, caller)
         }
@@ -93,7 +93,7 @@ class PinSearchFragment: AbsBaseMapFragment() {
 
         val centerPosition = googleMap?.projection?.visibleRegion?.latLngBounds?.center
         centerPosition?.let {
-            finalPosition = it.toCoordinate()
+            pointOfInterestLocation = it.toCoordinate()
             geocodeRepository.retrieveAddress(centerPosition.toCoordinate())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -122,7 +122,7 @@ class PinSearchFragment: AbsBaseMapFragment() {
         binding.addressFound.visibility = View.VISIBLE
 
         // Update the final location
-        finalPosition = pointOfInterest.latLng.toCoordinate()
+        pointOfInterestLocation = pointOfInterest.latLng.toCoordinate()
     }
 
     override fun onDestroy() {

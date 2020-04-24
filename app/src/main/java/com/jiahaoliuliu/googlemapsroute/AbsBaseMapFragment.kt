@@ -28,6 +28,7 @@ abstract class AbsBaseMapFragment: Fragment() {
     companion object {
         // offset from edges of the map - 20% of screen
         private const val PERCENTAGE_PADDING = 20
+        private const val DEFAULT_ZOOM = 15F
         private val compositeDisposable = CompositeDisposable()
     }
 
@@ -35,6 +36,10 @@ abstract class AbsBaseMapFragment: Fragment() {
     protected var googleMap: GoogleMap? = null
     private var route: Polyline? = null
     private var markerBetweenLocations: Marker? = null
+    private var initialLocation: Coordinate? = null
+    private var initialLocationMarker: Marker? = null
+    private val finalLocationMarker: Marker? = null
+    private var finalLocation: Coordinate? = null
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -45,7 +50,6 @@ abstract class AbsBaseMapFragment: Fragment() {
         }
         supportMapFragment.getMapAsync {
             googleMap = it
-            onMapSynchronized()
             it.setOnCameraIdleListener {
                 onMapCameraIdle()
             }
@@ -53,6 +57,33 @@ abstract class AbsBaseMapFragment: Fragment() {
             it.setOnPoiClickListener { pointOfInterest ->
                 onPointOfInterestClicked(pointOfInterest)
             }
+
+            // Draw initial position marker
+            getInitialPosition()?.let {initialPosition ->
+                initialLocationMarker?.remove()
+                drawMarker(initialPosition)
+            }
+
+            // Draw final position marker
+            getFinalPosition()?.let {finalPosition ->
+                finalLocationMarker?.remove()
+                drawMarker(finalPosition)
+            }
+
+            // Draw the route between initial position and final position if possible
+            drawRouteBetweenInitialAndFinalPositions(getInitialPosition(), getFinalPosition())
+            onMapSynchronized()
+        }
+    }
+
+    fun drawMarker(position: Coordinate) {
+        googleMap?.let {googleMapNotNull ->
+            googleMapNotNull.moveCamera(CameraUpdateFactory.newLatLngZoom(position.toLatLng(),
+                DEFAULT_ZOOM))
+            val markerOptions = MarkerOptions()
+            markerOptions.position(position.toLatLng())
+            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+            initialLocationMarker = googleMapNotNull.addMarker(markerOptions)
         }
     }
 
@@ -60,16 +91,35 @@ abstract class AbsBaseMapFragment: Fragment() {
         // Not do anything. This method is mean to be overriden
     }
 
+    private fun getInitialPosition() = initialLocation
+
+    fun setInitialPosition(initialPosition: Coordinate) {
+        this.initialLocation = initialPosition
+        drawRouteBetweenInitialAndFinalPositions()
+    }
+
+    private fun getFinalPosition() = finalLocation
+
+    fun setFinalPosition(finalPosition: Coordinate) {
+        this.finalLocation = finalPosition
+        drawRouteBetweenInitialAndFinalPositions()
+    }
+
     abstract fun onMapSynchronized()
 
     open fun onMapCameraIdle() {
-        // Not do anything. This method is mean to be overriden
+        // Not do anything. This method is mean to be overridden
     }
 
-    protected fun drawRouteBetweenOriginAndDestination(origin: Coordinate, destination: Coordinate,
-                                                       boundMapToLocations: Boolean = true,
-                                                        removePreviousRoute: Boolean = false) {
-        val disposable = directionRepository.calculateDirection(origin, destination)
+    protected fun drawRouteBetweenInitialAndFinalPositions(initialPosition: Coordinate? = this.initialLocation,
+                                                           destination: Coordinate? = this.finalLocation, boundMapToLocations: Boolean = true,
+                                                           removePreviousRoute: Boolean = false) {
+        // Preconditions
+        if (initialPosition == null || destination == null || googleMap == null) {
+            return
+        }
+
+        val disposable = directionRepository.calculateDirection(initialPosition, destination)
             .subscribeOn(Schedulers.io())
             .doOnSubscribe { showProgressScreen(true) }
             .observeOn(AndroidSchedulers.mainThread())

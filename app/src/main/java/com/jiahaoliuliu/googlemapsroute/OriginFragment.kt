@@ -79,8 +79,8 @@ class OriginFragment(): AbsBaseMapFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            if (it.containsKey(ARGUMENT_INITIAL_LOCATION)) {
-                initialLocation = it.getParcelable(ARGUMENT_INITIAL_LOCATION)
+            it.getParcelable<Coordinate>(ARGUMENT_INITIAL_LOCATION)?.let {initialLocation->
+                setInitialPosition(initialLocation)
             }
 
             if (it.containsKey(ARGUMENT_INITIAL_PLACE_ID)) {
@@ -117,8 +117,8 @@ class OriginFragment(): AbsBaseMapFragment() {
     private fun drawInitialPositionIfAvailable() {
         initialLocation?.let {
             setMarkerToInitialLocation()
-            boundMapToLocations(it.toLatLng(), DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng())
-            drawRouteBetweenOriginAndDestination(
+//            boundMapToLocations(it.toLatLng(), DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng())
+            drawRouteBetweenInitialAndFinalPositions(
                 it, DirectionRepository.DXB_AIRPORT_LOCATION, false
             )
         } ?:run {
@@ -132,7 +132,7 @@ class OriginFragment(): AbsBaseMapFragment() {
                         directionRepository.initialLocation = initialLocation
                         setMarkerToInitialLocation()
                         boundMapToLocations(placeDetails.location.toLatLng(), DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng())
-                        drawRouteBetweenOriginAndDestination(
+                        drawRouteBetweenInitialAndFinalPositions(
                             placeDetails.location, DirectionRepository.DXB_AIRPORT_LOCATION, false
                         )
                     }, { throwable -> Timber.e(throwable, "Error retrieving place details") })
@@ -222,7 +222,7 @@ class OriginFragment(): AbsBaseMapFragment() {
 
     private fun drawDistanceToTheAirport() {
         initialLocation?.let {
-            drawRouteBetweenOriginAndDestination(it, DirectionRepository.DXB_AIRPORT_LOCATION)
+            drawRouteBetweenInitialAndFinalPositions(it, DirectionRepository.DXB_AIRPORT_LOCATION)
         }
     }
 
