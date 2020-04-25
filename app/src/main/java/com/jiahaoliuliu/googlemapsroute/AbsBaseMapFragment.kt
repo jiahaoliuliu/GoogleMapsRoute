@@ -90,7 +90,7 @@ abstract class AbsBaseMapFragment: Fragment() {
     }
 
     open fun onPointOfInterestClicked(pointOfInterest: PointOfInterest) {
-        // Not do anything. This method is mean to be overriden
+        // Not do anything. This method is mean to be overridden
     }
 
     fun getInitialLocation() = initialLocation

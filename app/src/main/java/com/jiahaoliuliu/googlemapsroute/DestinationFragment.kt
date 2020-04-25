@@ -42,8 +42,6 @@ class DestinationFragment: AbsBaseMapFragment() {
     private lateinit var binding: FragmentDestinationBinding
     private lateinit var onSearchLocationListener: SearchLocationListener
     private var finalDestination: PlaceDetails? = null
-    private var finalLocationTmp: Coordinate? = null
-    private var finalLocationMarker: Marker? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -56,11 +54,7 @@ class DestinationFragment: AbsBaseMapFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            if (it.containsKey(ARGUMENT_FINAL_LOCATION)) {
-                finalLocationTmp = it.getParcelable(ARGUMENT_FINAL_LOCATION)
-            }
-        }
+        setInitialLocation(DirectionRepository.BALI_AIRPORT_LOCATION)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -71,6 +65,11 @@ class DestinationFragment: AbsBaseMapFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         MainApplication.getMainComponent()?.inject(this)
+        arguments?.let {
+            it.getParcelable<Coordinate>(ARGUMENT_FINAL_LOCATION)?.let {finalLocation ->
+                setFinalLocation(finalLocation)
+            }
+        }
         binding.addressInput.setOnClickListener {
             onSearchLocationListener.onSearchLocationByAddressRequested(
                 binding.addressInput.text.toString(), Caller.DESTINATION) }
@@ -82,14 +81,8 @@ class DestinationFragment: AbsBaseMapFragment() {
 
     override fun onMapSynchronized() {
         showAirportLocation()
-        binding.searchLayout.visibility = View.VISIBLE
-        finalLocationTmp?.let {
-            drawRouteBetweenInitialAndFinalLocations(
-                DirectionRepository.BALI_AIRPORT_LOCATION, it)
-            setMarkerToFinalLocation()
-            directionRepository.initialLocation?.let {
-                binding.showFullRouteButton.visibility = View.VISIBLE
-            }
+        if (hasFinalLocation()) {
+            binding.showFullRouteButton.visibility = View.VISIBLE
         }
     }
 
@@ -113,7 +106,7 @@ class DestinationFragment: AbsBaseMapFragment() {
             .subscribe({ placeDetails ->
                 finalDestination = placeDetails
                 binding.addressInput.text = placeDetails.name
-                setMarkerToFinalLocation()
+                drawMarker(placeDetails.location)
                 drawRouteBetweenInitialAndFinalLocations(
                     DirectionRepository.BALI_AIRPORT_LOCATION, placeDetails.location
                 )
@@ -140,20 +133,6 @@ class DestinationFragment: AbsBaseMapFragment() {
 
                 // Show time
                 addMarkerBetweenLocations("15h 40mins", arrayListOf(DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng(), DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng()))
-            }
-        }
-    }
-
-    private fun setMarkerToFinalLocation() {
-        googleMap?.let {googleMapNotNull ->
-            finalLocationTmp?.let {
-                finalLocationMarker?.remove()
-                googleMapNotNull.moveCamera(CameraUpdateFactory.newLatLngZoom(it.toLatLng(), DEFAULT_ZOOM
-                ))
-                val markerOptions = MarkerOptions()
-                markerOptions.position(it.toLatLng())
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                finalLocationMarker = googleMapNotNull.addMarker(markerOptions)
             }
         }
     }

@@ -79,7 +79,7 @@ class OriginFragment: AbsBaseMapFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         MainApplication.getMainComponent()?.inject(this)
         arguments?.let {
-            it.getParcelable<Coordinate>(ARGUMENT_INITIAL_LOCATION)?.let {initialLocation->
+            it.getParcelable<Coordinate>(ARGUMENT_INITIAL_LOCATION)?.let {initialLocation ->
                 setInitialLocation(initialLocation)
             }
 
