@@ -8,13 +8,11 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.datalayer.PlacesRepository
 import com.jiahaoliuliu.entity.Coordinate
-import com.jiahaoliuliu.entity.PlaceDetails
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentDestinationBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -28,10 +26,19 @@ class DestinationFragment: AbsBaseMapFragment() {
         private const val DEFAULT_ZOOM = 15F
         private val compositeDisposable = CompositeDisposable()
         private const val ARGUMENT_FINAL_LOCATION = "Argument final location"
+        private const val ARGUMENT_FINAL_ID = "Argument final id"
 
         fun newInstance(finalLocation: Coordinate): DestinationFragment {
             val bundle = Bundle()
             bundle.putParcelable(ARGUMENT_FINAL_LOCATION, finalLocation)
+            val destinationFragment = DestinationFragment()
+            destinationFragment.arguments = bundle
+            return destinationFragment
+        }
+
+        fun newInstance(placeId: String): DestinationFragment {
+            val bundle = Bundle()
+            bundle.putString(ARGUMENT_FINAL_ID, placeId)
             val destinationFragment = DestinationFragment()
             destinationFragment.arguments = bundle
             return destinationFragment
@@ -41,9 +48,7 @@ class DestinationFragment: AbsBaseMapFragment() {
     @Inject lateinit var placesRepository: PlacesRepository
     private lateinit var binding: FragmentDestinationBinding
     private lateinit var onSearchLocationListener: SearchLocationListener
-    private var finalDestination: PlaceDetails? = null
-    private var finalLocation: Coordinate? = null
-    private var finalLocationMarker: Marker? = null
+    private var finalPlaceId: String? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -56,11 +61,7 @@ class DestinationFragment: AbsBaseMapFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            if (it.containsKey(ARGUMENT_FINAL_LOCATION)) {
-                finalLocation = it.getParcelable(ARGUMENT_FINAL_LOCATION)
-            }
-        }
+        setInitialLocation(DirectionRepository.BALI_AIRPORT_LOCATION)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -71,6 +72,15 @@ class DestinationFragment: AbsBaseMapFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         MainApplication.getMainComponent()?.inject(this)
+        arguments?.let {
+            it.getParcelable<Coordinate>(ARGUMENT_FINAL_LOCATION)?.let {finalLocation ->
+                setFinalLocation(finalLocation)
+            }
+
+            if (it.containsKey(ARGUMENT_FINAL_ID)) {
+                finalPlaceId = it.getString(ARGUMENT_FINAL_ID)
+            }
+        }
         binding.addressInput.setOnClickListener {
             onSearchLocationListener.onSearchLocationByAddressRequested(
                 binding.addressInput.text.toString(), Caller.DESTINATION) }
@@ -82,14 +92,24 @@ class DestinationFragment: AbsBaseMapFragment() {
 
     override fun onMapSynchronized() {
         showAirportLocation()
-        binding.searchLayout.visibility = View.VISIBLE
-        finalLocation?.let {
-            drawRouteBetweenOriginAndDestination(
-                DirectionRepository.BALI_AIRPORT_LOCATION, it)
-            setMarkerToFinalLocation()
-            directionRepository.initialLocation?.let {
-                binding.showFullRouteButton.visibility = View.VISIBLE
-            }
+        if (hasFinalLocation()) {
+            binding.showFullRouteButton.visibility = View.VISIBLE
+        }
+
+        finalPlaceId?.let {
+            val disposable = placesRepository.retrievePlaceDetails(it)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ placeDetails ->
+                    binding.addressInput.text = placeDetails.name
+                    setFinalLocation(placeDetails.location)
+
+                    // Show the full route button if the initial location was set
+                    directionRepository.initialLocation?.let {
+                        binding.showFullRouteButton.visibility = View.VISIBLE
+                    }
+                }, { throwable -> Timber.e(throwable, "Error retrieving place details") })
+            compositeDisposable.add(disposable)
         }
     }
 
@@ -106,27 +126,10 @@ class DestinationFragment: AbsBaseMapFragment() {
         }
     }
 
-    fun showRouteToLocation(placeId: String) {
-        val disposable = placesRepository.retrievePlaceDetails(placeId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ placeDetails ->
-                finalDestination = placeDetails
-                binding.addressInput.text = placeDetails.name
-                setMarkerToFinalLocation()
-                drawRouteBetweenOriginAndDestination(
-                    DirectionRepository.BALI_AIRPORT_LOCATION, placeDetails.location
-                )
-
-                binding.showFullRouteButton.visibility = View.VISIBLE
-            }, { throwable -> Timber.e(throwable, "Error retrieving place details") })
-        compositeDisposable.add(disposable)
-    }
-
     private fun showFullRoute() {
-        directionRepository.initialLocation?.let { lastKnownLocationNotNull ->
-            finalDestination?.let {finalDestinationNotNull ->
-                drawRouteBetweenOriginAndDestination(lastKnownLocationNotNull, DirectionRepository.DXB_AIRPORT_LOCATION,
+        directionRepository.initialLocation?.let { initialLocationNotNull ->
+            getFinalLocation()?.let { finalLocationNotNull ->
+                drawRouteBetweenInitialAndFinalLocations(initialLocationNotNull, DirectionRepository.DXB_AIRPORT_LOCATION,
                     boundMapToLocations = false, removePreviousRoute = false)
 
                 // Draw a line between the Dubai airport and Bali airport
@@ -135,8 +138,8 @@ class DestinationFragment: AbsBaseMapFragment() {
                         .color(ContextCompat.getColor(context!!, R.color.colorRoute))
                         .add(DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng(), DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng()))
 
-                boundMapToLocations(lastKnownLocationNotNull.toLatLng(), DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng(),
-                    DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng(), finalDestinationNotNull.location.toLatLng())
+                boundMapToLocations(initialLocationNotNull.toLatLng(), DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng(),
+                    DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng(), finalLocationNotNull.toLatLng())
 
                 // Show time
                 addMarkerBetweenLocations("15h 40mins", arrayListOf(DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng(), DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng()))
@@ -144,23 +147,14 @@ class DestinationFragment: AbsBaseMapFragment() {
         }
     }
 
-    private fun setMarkerToFinalLocation() {
-        googleMap?.let {googleMapNotNull ->
-            finalLocation?.let {
-                finalLocationMarker?.remove()
-                googleMapNotNull.moveCamera(CameraUpdateFactory.newLatLngZoom(it.toLatLng(), DEFAULT_ZOOM
-                ))
-                val markerOptions = MarkerOptions()
-                markerOptions.position(it.toLatLng())
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                finalLocationMarker = googleMapNotNull.addMarker(markerOptions)
-            }
-        }
-    }
-
     override fun showProgressScreen(showIt: Boolean) {
         val visibility = if (showIt) View.VISIBLE else View.GONE
         binding.progressBar.visibility = visibility
+    }
+
+    override fun setFinalLocation(finalLocation: Coordinate) {
+        drawMarker(finalLocation)
+        super.setFinalLocation(finalLocation)
     }
 
     override fun onDestroy() {
