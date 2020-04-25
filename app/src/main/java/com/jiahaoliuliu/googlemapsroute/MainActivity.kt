@@ -6,14 +6,13 @@ import androidx.databinding.DataBindingUtil
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.jiahaoliuliu.entity.Coordinate
-import com.jiahaoliuliu.googlemapsroute.LocationSearchFragment.Caller
 import com.jiahaoliuliu.googlemapsroute.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoundListener, OnLocationSetByPinListener {
 
     private lateinit var binding: ActivityMainBinding
-    private val originFragment = OriginFragment()
-    private val destinationFragment = DestinationFragment()
+    private var originFragment: OriginFragment? = null
+    private var destinationFragment: DestinationFragment? = null
     private var locationSearchFragment: LocationSearchFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,11 +44,18 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
     }
 
     private fun showOriginScreen() {
-        supportFragmentManager.beginTransaction().replace(R.id.container, originFragment).commit()
+        if (originFragment == null) {
+            originFragment = OriginFragment()
+        }
+        supportFragmentManager.beginTransaction().replace(R.id.container, originFragment!!).commit()
     }
 
     private fun showDestinationScreen() {
-        supportFragmentManager.beginTransaction().replace(R.id.container, destinationFragment).commit()
+        if (destinationFragment == null) {
+            destinationFragment = DestinationFragment()
+        }
+
+        supportFragmentManager.beginTransaction().replace(R.id.container, destinationFragment!!).commit()
     }
 
     override fun onSearchLocationByAddressRequested(address: String, caller: Caller) {
@@ -57,26 +63,40 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
         supportFragmentManager.beginTransaction().replace(R.id.container, locationSearchFragment!!).commit()
     }
 
-    override fun onSearchLocationByPinRequested() {
-        val pinSearchFragment = PinSearchFragment()
+    override fun onSearchLocationByPinRequested(caller: Caller) {
+        val pinSearchFragment = PinSearchFragment.newInstance(caller)
         supportFragmentManager.beginTransaction().replace(R.id.container, pinSearchFragment).commit()
+    }
+
+    override fun onSearchLocationByVoiceRequested(caller: Caller) {
+        locationSearchFragment = LocationSearchFragment.newInstance("", caller, true)
+        supportFragmentManager.beginTransaction().replace(R.id.container, locationSearchFragment!!).commit()
     }
 
     override fun onLocationFound(placeId: String, caller: Caller) {
         when (caller) {
             Caller.ORIGIN -> {
-                originFragment.showRouteFromLocation(placeId)
+                originFragment = OriginFragment.newInstance(placeId)
                 showOriginScreen()
             }
             Caller.DESTINATION -> {
-                destinationFragment.showRouteToLocation(placeId)
+                destinationFragment = DestinationFragment.newInstance(placeId)
                 showDestinationScreen()
             }
         }
     }
 
-    override fun onLocationSetByPin(locationSetByPin: Coordinate) {
-        originFragment.showRouteFromLocation(locationSetByPin)
-        showOriginScreen()
+    override fun onLocationSetByPin(locationSetByPin: Coordinate, caller: Caller) {
+        when(caller) {
+            Caller.ORIGIN -> {
+                originFragment = OriginFragment.newInstance(locationSetByPin)
+                showOriginScreen()
+            }
+            Caller.DESTINATION -> {
+                destinationFragment = DestinationFragment.newInstance(locationSetByPin)
+                showDestinationScreen()
+            }
+        }
+
     }
 }

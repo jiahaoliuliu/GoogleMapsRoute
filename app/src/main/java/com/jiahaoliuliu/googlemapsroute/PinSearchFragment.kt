@@ -24,13 +24,23 @@ class PinSearchFragment: AbsBaseMapFragment() {
         private val DEFAULT_LOCATION = LatLng(25.276, 55.296)
         private const val DEFAULT_ZOOM = 15F
         private val compositeDisposable = CompositeDisposable()
+        private const val ARGUMENT_KEY_CALLER = "Caller"
+
+        fun newInstance(caller: Caller): PinSearchFragment {
+            val bundle = Bundle()
+            bundle.putString(ARGUMENT_KEY_CALLER, caller.toString())
+            val pingSearchBinding = PinSearchFragment()
+            pingSearchBinding.arguments = bundle
+            return pingSearchBinding
+        }
     }
 
     @Inject lateinit var geocodeRepository: GeocodeRepository
     private lateinit var binding: FragmentPingSearchBinding
-    private var finalPosition: Coordinate? = null
+    private var pointOfInterestLocation: Coordinate? = null
     private lateinit var onLocationSetByPinListener: OnLocationSetByPinListener
     private var mapsMovingToPointOfInterest = false
+    private var caller: Caller = Caller.ORIGIN
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -38,6 +48,13 @@ class PinSearchFragment: AbsBaseMapFragment() {
             onLocationSetByPinListener = context
         } else {
             throw ClassCastException("The attached class must implement OnLocationSetByPinListener")
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            caller = Caller.valueOf(it.getString(ARGUMENT_KEY_CALLER)!!)
         }
     }
 
@@ -56,9 +73,9 @@ class PinSearchFragment: AbsBaseMapFragment() {
     }
 
     private fun setLocation() {
-        finalPosition?.let {
+        pointOfInterestLocation?.let {
             // Return to the activity with the position
-            onLocationSetByPinListener.onLocationSetByPin(it)
+            onLocationSetByPinListener.onLocationSetByPin(it, caller)
         }
     }
 
@@ -76,7 +93,7 @@ class PinSearchFragment: AbsBaseMapFragment() {
 
         val centerPosition = googleMap?.projection?.visibleRegion?.latLngBounds?.center
         centerPosition?.let {
-            finalPosition = it.toCoordinate()
+            pointOfInterestLocation = it.toCoordinate()
             geocodeRepository.retrieveAddress(centerPosition.toCoordinate())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -105,7 +122,7 @@ class PinSearchFragment: AbsBaseMapFragment() {
         binding.addressFound.visibility = View.VISIBLE
 
         // Update the final location
-        finalPosition = pointOfInterest.latLng.toCoordinate()
+        pointOfInterestLocation = pointOfInterest.latLng.toCoordinate()
     }
 
     override fun onDestroy() {
@@ -116,5 +133,5 @@ class PinSearchFragment: AbsBaseMapFragment() {
 
 interface OnLocationSetByPinListener {
 
-    fun onLocationSetByPin(locationSetByPin: Coordinate)
+    fun onLocationSetByPin(locationSetByPin: Coordinate, caller: Caller)
 }

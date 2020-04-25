@@ -11,14 +11,10 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.datalayer.PlacesRepository
 import com.jiahaoliuliu.entity.Coordinate
-import com.jiahaoliuliu.googlemapsroute.LocationSearchFragment.Caller
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentOriginBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -33,16 +29,32 @@ class OriginFragment: AbsBaseMapFragment() {
         private val DEFAULT_LOCATION = LatLng(25.276, 55.296)
         private const val DEFAULT_ZOOM = 15F
         private val compositeDisposable = CompositeDisposable()
+        private const val ARGUMENT_INITIAL_LOCATION = "Argument initial location"
+        private const val ARGUMENT_INITIAL_PLACE_ID = "Argument place id"
+
+        fun newInstance(initialLocation: Coordinate): OriginFragment {
+            val bundle = Bundle()
+            bundle.putParcelable(ARGUMENT_INITIAL_LOCATION, initialLocation)
+            val originFragment = OriginFragment()
+            originFragment.arguments = bundle
+            return originFragment
+        }
+
+        fun newInstance(placeId: String): OriginFragment {
+            val bundle = Bundle()
+            bundle.putString(ARGUMENT_INITIAL_PLACE_ID, placeId)
+            val originFragment = OriginFragment()
+            originFragment.arguments = bundle
+            return originFragment
+        }
     }
 
     @Inject lateinit var placesRepository: PlacesRepository
     private lateinit var binding: FragmentOriginBinding
     private lateinit var onSearchLocationListener: SearchLocationListener
-    private var isLocationPermissionAlreadyAskedToUser = false
     private var locationPermissionGranted = false
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    private var initialLocation: Coordinate? = null
-    private var initialLocationMarker: Marker? = null
+    private var initialPlaceId: String? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -59,12 +71,27 @@ class OriginFragment: AbsBaseMapFragment() {
         return binding.root
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setFinalLocation(DirectionRepository.DXB_AIRPORT_LOCATION)
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         MainApplication.getMainComponent()?.inject(this)
+        arguments?.let {
+            it.getParcelable<Coordinate>(ARGUMENT_INITIAL_LOCATION)?.let {initialLocation ->
+                setInitialLocation(initialLocation)
+            }
+
+            if (it.containsKey(ARGUMENT_INITIAL_PLACE_ID)) {
+                initialPlaceId = it.getString(ARGUMENT_INITIAL_PLACE_ID)
+            }
+        }
         binding.addressInput.setOnClickListener {
             onSearchLocationListener.onSearchLocationByAddressRequested(
                 binding.addressInput.text.toString(), Caller.ORIGIN) }
-        binding.pinLocationIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByPinRequested()}
+        binding.pinLocationIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByPinRequested(Caller.ORIGIN)}
+        binding.voiceSearchIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByVoiceRequested(Caller.ORIGIN)}
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity!!)
         // The super class will try to find the map and synchronize it
         super.onActivityCreated(savedInstanceState)
@@ -76,18 +103,9 @@ class OriginFragment: AbsBaseMapFragment() {
             CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM)
         )
 
-        if (!isLocationPermissionAlreadyAskedToUser) {
-            isLocationPermissionAlreadyAskedToUser = true
+        if (!hasInitialLocation()) {
             getLocationPermission()
         } else {
-            initialLocation?.let {
-                setMarkerToInitialLocation()
-                boundMapToLocations(it.toLatLng(), DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng())
-                drawRouteBetweenOriginAndDestination(
-                    it, DirectionRepository.DXB_AIRPORT_LOCATION, false
-                )
-            }
-
             binding.searchLayout.visibility = View.VISIBLE
         }
     }
@@ -126,15 +144,22 @@ class OriginFragment: AbsBaseMapFragment() {
     }
 
     private fun onLocationPermissionNegated() {
-        googleMap?.let {googleMapNotNull ->
-            initialLocation?.let { lastKnownLocationNotNull ->
-                googleMapNotNull.moveCamera(
-                    CameraUpdateFactory.newLatLngZoom(lastKnownLocationNotNull.toLatLng(), DEFAULT_ZOOM))
-            }
-            googleMapNotNull.uiSettings.isMyLocationButtonEnabled = false
-        }
-
         binding.searchLayout.visibility = View.VISIBLE
+        initialPlaceId?.let {
+            drawInitialLocationBasedOnInitialPlaceId(it)
+        }
+    }
+
+    private fun drawInitialLocationBasedOnInitialPlaceId(initialPlaceId: String) {
+        // Initial location cannot coexist with the initial location
+        val disposable = placesRepository.retrievePlaceDetails(initialPlaceId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ placeDetails ->
+                binding.addressInput.text = placeDetails.name
+                setInitialLocation(placeDetails.location)
+            }, { throwable -> Timber.e(throwable, "Error retrieving place details") })
+        compositeDisposable.add(disposable)
     }
 
     private fun updateLocationUI() {
@@ -156,10 +181,9 @@ class OriginFragment: AbsBaseMapFragment() {
             val locationResult = fusedLocationProviderClient.lastLocation
             locationResult.addOnCompleteListener { task ->
                 if (task.isSuccessful && task.result != null) {
-                    initialLocation = (task.result as Location).toCoordinate()
-                    directionRepository.initialLocation = initialLocation
-                    setMarkerToInitialLocation()
-                    drawDistanceToTheAirport()
+                    val initialLocation = (task.result as Location).toCoordinate()
+                    drawMarker(initialLocation)
+                    setInitialLocation(initialLocation)
                 } else {
                     // TODO: Subscribe to updates from fused service
                     Timber.w(task.exception,"Current location is null. Using defaults.");
@@ -170,43 +194,6 @@ class OriginFragment: AbsBaseMapFragment() {
         }
     }
 
-    private fun drawDistanceToTheAirport() {
-        initialLocation?.let {
-            drawRouteBetweenOriginAndDestination(it, DirectionRepository.DXB_AIRPORT_LOCATION)
-        }
-    }
-
-    private fun setMarkerToInitialLocation() {
-        googleMap?.let {googleMapNotNull ->
-            initialLocation?.let {
-                initialLocationMarker?.remove()
-                googleMapNotNull.moveCamera(CameraUpdateFactory.newLatLngZoom(it.toLatLng(), DEFAULT_ZOOM))
-                val markerOptions = MarkerOptions()
-                markerOptions.position(it.toLatLng())
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                initialLocationMarker = googleMapNotNull.addMarker(markerOptions)
-            }
-        }
-    }
-
-    fun showRouteFromLocation(placeId: String) {
-        val disposable = placesRepository.retrievePlaceDetails(placeId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ placeDetails ->
-                binding.addressInput.text = placeDetails.name
-                initialLocation = placeDetails.location
-                directionRepository.initialLocation = initialLocation
-            }, { throwable -> Timber.e(throwable, "Error retrieving place details") })
-        compositeDisposable.add(disposable)
-    }
-
-    fun showRouteFromLocation(location: Coordinate) {
-        initialLocation = location
-        directionRepository.initialLocation = initialLocation
-        binding.searchLayout.visibility = View.VISIBLE
-    }
-
     override fun showProgressScreen(showIt: Boolean) {
         val visibility = if (showIt) View.VISIBLE else View.GONE
         binding.progressBar.visibility = visibility
@@ -215,5 +202,11 @@ class OriginFragment: AbsBaseMapFragment() {
     override fun onDestroy() {
         compositeDisposable.clear()
         super.onDestroy()
+    }
+
+    override fun setInitialLocation(initialLocation: Coordinate) {
+        drawMarker(initialLocation)
+        directionRepository?.initialLocation = initialLocation
+        super.setInitialLocation(initialLocation)
     }
 }
