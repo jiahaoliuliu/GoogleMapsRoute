@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
                 showOriginScreen()
             }
             Caller.DESTINATION -> {
-                destinationFragment?.showRouteToLocation(placeId)
+                destinationFragment = DestinationFragment.newInstance(placeId)
                 showDestinationScreen()
             }
         }
