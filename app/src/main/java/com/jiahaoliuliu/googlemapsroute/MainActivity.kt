@@ -1,8 +1,10 @@
 package com.jiahaoliuliu.googlemapsroute
 
 import android.os.Bundle
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.jiahaoliuliu.entity.Coordinate
@@ -15,11 +17,20 @@ class MainActivity : AppCompatActivity(), SearchLocationListener, OnLocationFoun
     private var destinationFragment: DestinationFragment? = null
     private var locationSearchFragment: LocationSearchFragment? = null
 
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<LinearLayout>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolbar)
         setUpTabs()
+        bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet.bottomSheet)
+        // Show bottom sheet
+        if (bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED) {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        } else {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
     }
 
     private fun setUpTabs() {
