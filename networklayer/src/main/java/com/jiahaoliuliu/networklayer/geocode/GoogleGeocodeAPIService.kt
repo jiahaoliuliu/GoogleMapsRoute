@@ -11,9 +11,9 @@ interface GoogleGeocodeAPIService {
     }
 
     /**
-     * https://maps.googleapis.com/maps/api/place/autocomplete/json?
+     * https://maps.googleapis.com/maps/api/geocode/json?
      * language=en&
-     * input=Amoeba&
+     * address=Address&
      * key=YOUR_KEY
      */
     @GET("https://maps.googleapis.com/maps/api/geocode/json")
