@@ -103,10 +103,13 @@ class OriginFragment: AbsBaseMapFragment() {
             CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM)
         )
 
-        if (!hasInitialLocation()) {
+        if (!hasInitialLocation() && initialPlaceId.isNullOrEmpty()) {
             getLocationPermission()
         } else {
             binding.searchLayout.visibility = View.VISIBLE
+            initialPlaceId?.let {
+                drawInitialLocationBasedOnInitialPlaceId(it)
+            }
         }
     }
 
