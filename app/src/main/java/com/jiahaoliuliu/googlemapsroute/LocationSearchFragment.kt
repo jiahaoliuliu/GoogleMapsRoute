@@ -164,7 +164,7 @@ class LocationSearchFragment: Fragment(), OnPlaceClickListener {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>,
                                             grantResults: IntArray) {
         when (requestCode) {
-            REQUEST_CODE_SPEECH_TO_TEXT -> {
+            PERMISSIONS_RECORD_AUDIO -> {
                 // If request is cancelled, the result arrays are empty
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startSpeechToTextDialog()
