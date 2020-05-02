@@ -8,7 +8,10 @@ data class Direction (
     val startLocation: Coordinate,
     val endAddress: String,
     val endLocation: Coordinate,
-    val polyline: String
+    val polyline: String,
+    val stepsList: List<Step>
 )
 
 data class Bounds (val northeast: Coordinate, val southwest: Coordinate)
+
+data class Step (val instruction: String, val distance: String, val duration: String)
