@@ -204,11 +204,13 @@ class OriginFragment: AbsBaseMapFragment() {
     }
 
     override fun onNewRouteDrawn(direction: Direction) {
-        // TODO: Play with the views
-
-        binding.bottomSheet.direction = direction
         // Set the steps list
         Timber.v("New route: $direction")
+
+        binding.bottomSheet.direction = direction
+        val stepsListAdapter = StepsListAdapter()
+        stepsListAdapter.updateStepsList(direction.stepsList)
+        binding.bottomSheet.stepsList.adapter = stepsListAdapter
     }
 
     override fun onDestroy() {

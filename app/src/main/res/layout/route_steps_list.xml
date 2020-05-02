@@ -35,7 +35,7 @@
         <TextView
             android:id="@+id/duration"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:padding="5dp"
             style="@android:style/TextAppearance.Medium"
             android:text="@{direction.duration}"
@@ -47,7 +47,7 @@
         <TextView
             android:id="@+id/distance"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:padding="5dp"
             style="@android:style/TextAppearance.Medium"
             android:text="@{direction.distance}"
@@ -62,8 +62,10 @@
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@+id/duration"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
-
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:itemCount="5"
+            tools:listitem="@layout/item_step" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
