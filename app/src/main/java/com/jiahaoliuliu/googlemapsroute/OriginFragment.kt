@@ -15,6 +15,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.datalayer.PlacesRepository
 import com.jiahaoliuliu.entity.Coordinate
+import com.jiahaoliuliu.entity.Direction
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentOriginBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -90,7 +91,8 @@ class OriginFragment: AbsBaseMapFragment() {
         binding.addressInput.setOnClickListener {
             onSearchLocationListener.onSearchLocationByAddressRequested(
                 binding.addressInput.text.toString(), Caller.ORIGIN) }
-        binding.pinLocationIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByPinRequested(Caller.ORIGIN)}
+        binding.pinLocationIcon.setOnClickListener{
+            onSearchLocationListener.onSearchLocationByPinRequested(Caller.ORIGIN, DirectionRepository.DXB_AIRPORT_LOCATION)}
         binding.voiceSearchIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByVoiceRequested(Caller.ORIGIN)}
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity!!)
         // The super class will try to find the map and synchronize it
@@ -202,6 +204,17 @@ class OriginFragment: AbsBaseMapFragment() {
         binding.progressBar.visibility = visibility
     }
 
+    override fun onNewRouteDrawn(direction: Direction, showRoute: Boolean) {
+        // Set the steps list
+        val visibility = if (showRoute) View.VISIBLE else View.GONE
+        binding.routeStepsList.root.visibility = visibility
+
+        binding.routeStepsList.direction = direction
+        val stepsListAdapter = StepsListAdapter()
+        stepsListAdapter.updateStepsList(direction.stepsList)
+        binding.routeStepsList.stepsList.adapter = stepsListAdapter
+    }
+
     override fun onDestroy() {
         compositeDisposable.clear()
         super.onDestroy()
@@ -209,7 +222,7 @@ class OriginFragment: AbsBaseMapFragment() {
 
     override fun setInitialLocation(initialLocation: Coordinate) {
         drawMarker(initialLocation)
-        directionRepository?.initialLocation = initialLocation
+        directionRepository.initialLocation = initialLocation
         super.setInitialLocation(initialLocation)
     }
 }

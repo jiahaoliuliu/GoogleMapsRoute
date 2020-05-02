@@ -13,6 +13,7 @@ import com.google.android.gms.maps.model.PolylineOptions
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.datalayer.PlacesRepository
 import com.jiahaoliuliu.entity.Coordinate
+import com.jiahaoliuliu.entity.Direction
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentDestinationBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -86,7 +87,8 @@ class DestinationFragment: AbsBaseMapFragment() {
                 binding.addressInput.text.toString(), Caller.DESTINATION) }
         binding.showFullRouteButton.setOnClickListener{showFullRoute()}
         binding.voiceSearchIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByVoiceRequested(Caller.DESTINATION)}
-        binding.pinLocationIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByPinRequested(Caller.DESTINATION)}
+        binding.pinLocationIcon.setOnClickListener{
+            onSearchLocationListener.onSearchLocationByPinRequested(Caller.DESTINATION, DirectionRepository.BALI_AIRPORT_LOCATION)}
         super.onActivityCreated(savedInstanceState)
     }
 
@@ -130,7 +132,7 @@ class DestinationFragment: AbsBaseMapFragment() {
         directionRepository.initialLocation?.let { initialLocationNotNull ->
             getFinalLocation()?.let { finalLocationNotNull ->
                 drawRouteBetweenInitialAndFinalLocations(initialLocationNotNull, DirectionRepository.DXB_AIRPORT_LOCATION,
-                    boundMapToLocations = false, removePreviousRoute = false)
+                    boundMapToLocations = false, removePreviousRoute = false, showRoute = false)
 
                 // Draw a line between the Dubai airport and Bali airport
                 googleMap?.addPolyline(
@@ -150,6 +152,17 @@ class DestinationFragment: AbsBaseMapFragment() {
     override fun showProgressScreen(showIt: Boolean) {
         val visibility = if (showIt) View.VISIBLE else View.GONE
         binding.progressBar.visibility = visibility
+    }
+
+    override fun onNewRouteDrawn(direction: Direction, showRoute: Boolean) {
+        // Set the steps list
+        val visibility = if (showRoute) View.VISIBLE else View.GONE
+        binding.routeStepsList.root.visibility = visibility
+
+        binding.routeStepsList.direction = direction
+        val stepsListAdapter = StepsListAdapter()
+        stepsListAdapter.updateStepsList(direction.stepsList)
+        binding.routeStepsList.stepsList.adapter = stepsListAdapter
     }
 
     override fun setFinalLocation(finalLocation: Coordinate) {

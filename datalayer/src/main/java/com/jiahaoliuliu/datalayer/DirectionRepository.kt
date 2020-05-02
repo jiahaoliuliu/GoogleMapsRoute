@@ -3,6 +3,7 @@ package com.jiahaoliuliu.datalayer
 import com.jiahaoliuliu.entity.Bounds
 import com.jiahaoliuliu.entity.Coordinate
 import com.jiahaoliuliu.entity.Direction
+import com.jiahaoliuliu.entity.Step
 import com.jiahaoliuliu.networklayer.direction.DirectionNetworkResponse
 import com.jiahaoliuliu.networklayer.direction.GoogleDirectionAPIService
 import io.reactivex.Single
@@ -33,7 +34,13 @@ class DirectionRepository(private val googleDirectionAPIService: GoogleDirection
             mapNetworkBoundsToInternalBounds(route.bounds), leg.distance.text, leg.duration.text,
             leg.startAddress, mapNetworkCoordinateToInternalCoordinate(leg.startLocation),
             leg.endAddress, mapNetworkCoordinateToInternalCoordinate(leg.endLocation),
-            route.polyline.points)
+            route.polyline.points, mapNetworkStepsToInternalSteps(leg.steps))
+    }
+
+    private fun mapNetworkStepsToInternalSteps(stepsList: List<com.jiahaoliuliu.networklayer.direction.Step>): List<Step> {
+        return stepsList.map { originalStep ->
+            Step(originalStep.htmlInstructions, originalStep.distance.text, originalStep.duration.text)
+        }
     }
 
     private fun mapNetworkBoundsToInternalBounds(bounds: com.jiahaoliuliu.networklayer.model.Bounds): Bounds {
