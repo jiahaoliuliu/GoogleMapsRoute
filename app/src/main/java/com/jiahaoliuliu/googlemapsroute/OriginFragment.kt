@@ -209,7 +209,7 @@ class OriginFragment: AbsBaseMapFragment() {
 
     override fun setInitialLocation(initialLocation: Coordinate) {
         drawMarker(initialLocation)
-        directionRepository?.initialLocation = initialLocation
+        directionRepository.initialLocation = initialLocation
         super.setInitialLocation(initialLocation)
     }
 }

@@ -1,6 +1,6 @@
 package com.jiahaoliuliu.entity
 
-data class Direction(
+data class Direction (
     val bounds: Bounds,
     val distance: String,
     val duration: String,
