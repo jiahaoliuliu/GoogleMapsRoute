@@ -203,9 +203,11 @@ class OriginFragment: AbsBaseMapFragment() {
         binding.progressBar.visibility = visibility
     }
 
-    override fun onNewRouteDrawn(direction: Direction) {
+    override fun onNewRouteDrawn(direction: Direction, showRoute: Boolean) {
         // Set the steps list
-        binding.bottomSheet.root.visibility = View.VISIBLE
+        val visibility = if (showRoute) View.VISIBLE else View.GONE
+        binding.bottomSheet.root.visibility = visibility
+
         binding.bottomSheet.direction = direction
         val stepsListAdapter = StepsListAdapter()
         stepsListAdapter.updateStepsList(direction.stepsList)

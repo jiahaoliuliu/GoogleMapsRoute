@@ -106,7 +106,7 @@ class PinSearchFragment: AbsBaseMapFragment() {
         }
     }
 
-    override fun onNewRouteDrawn(direction: Direction) {
+    override fun onNewRouteDrawn(direction: Direction, showRoute: Boolean) {
         // TODO: Create a simple map fragment to separate it from the AbsBaseMapFragment
         // Not do anything
     }

@@ -118,9 +118,9 @@ abstract class AbsBaseMapFragment: Fragment() {
         // Not do anything. This method is mean to be overridden
     }
 
-    protected fun drawRouteBetweenInitialAndFinalLocations(initialLocation: Coordinate? = this.initialLocation,
-                                                           finalLocation: Coordinate? = this.finalLocation, boundMapToLocations: Boolean = true,
-                                                           removePreviousRoute: Boolean = false) {
+    protected fun drawRouteBetweenInitialAndFinalLocations(
+        initialLocation: Coordinate? = this.initialLocation, finalLocation: Coordinate? = this.finalLocation,
+        boundMapToLocations: Boolean = true, removePreviousRoute: Boolean = false, showRoute: Boolean = true) {
         // Preconditions
         if (initialLocation == null || finalLocation == null || googleMap == null) {
             return
@@ -155,7 +155,7 @@ abstract class AbsBaseMapFragment: Fragment() {
                     boundMapToLocations(direction.bounds.northeast.toLatLng(), direction.bounds.southwest.toLatLng())
                 }
 
-                onNewRouteDrawn(direction)
+                onNewRouteDrawn(direction, showRoute)
             },
                 {throwable -> Timber.e(throwable, "Error getting the direction")}
             )
@@ -166,7 +166,7 @@ abstract class AbsBaseMapFragment: Fragment() {
         // Do nothing. This method is mean to be overrided
     }
 
-    abstract fun onNewRouteDrawn(direction: Direction)
+    abstract fun onNewRouteDrawn(direction: Direction, showRoute: Boolean)
 
     fun boundMapToLocations(vararg locations: LatLng) {
         val width = resources.displayMetrics.widthPixels;

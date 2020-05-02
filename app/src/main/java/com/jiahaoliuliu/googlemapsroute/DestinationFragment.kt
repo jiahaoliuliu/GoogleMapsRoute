@@ -131,7 +131,7 @@ class DestinationFragment: AbsBaseMapFragment() {
         directionRepository.initialLocation?.let { initialLocationNotNull ->
             getFinalLocation()?.let { finalLocationNotNull ->
                 drawRouteBetweenInitialAndFinalLocations(initialLocationNotNull, DirectionRepository.DXB_AIRPORT_LOCATION,
-                    boundMapToLocations = false, removePreviousRoute = false)
+                    boundMapToLocations = false, removePreviousRoute = false, showRoute = false)
 
                 // Draw a line between the Dubai airport and Bali airport
                 googleMap?.addPolyline(
@@ -144,6 +144,9 @@ class DestinationFragment: AbsBaseMapFragment() {
 
                 // Show time
                 addMarkerBetweenLocations("15h 40mins", arrayListOf(DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng(), DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng()))
+
+                // Hide de routes. This is not done yet
+                binding.bottomSheet.root.visibility = View.GONE
             }
         }
     }
@@ -153,9 +156,11 @@ class DestinationFragment: AbsBaseMapFragment() {
         binding.progressBar.visibility = visibility
     }
 
-    override fun onNewRouteDrawn(direction: Direction) {
+    override fun onNewRouteDrawn(direction: Direction, showRoute: Boolean) {
         // Set the steps list
-        binding.bottomSheet.root.visibility = View.VISIBLE
+        val visibility = if (showRoute) View.VISIBLE else View.GONE
+        binding.bottomSheet.root.visibility = visibility
+
         binding.bottomSheet.direction = direction
         val stepsListAdapter = StepsListAdapter()
         stepsListAdapter.updateStepsList(direction.stepsList)
