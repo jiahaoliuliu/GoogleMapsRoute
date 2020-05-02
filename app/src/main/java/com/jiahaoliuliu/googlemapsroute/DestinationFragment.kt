@@ -154,7 +154,12 @@ class DestinationFragment: AbsBaseMapFragment() {
     }
 
     override fun onNewRouteDrawn(direction: Direction) {
-        // TODO: Implement this
+        // Set the steps list
+        binding.bottomSheet.root.visibility = View.VISIBLE
+        binding.bottomSheet.direction = direction
+        val stepsListAdapter = StepsListAdapter()
+        stepsListAdapter.updateStepsList(direction.stepsList)
+        binding.bottomSheet.stepsList.adapter = stepsListAdapter
     }
 
     override fun setFinalLocation(finalLocation: Coordinate) {

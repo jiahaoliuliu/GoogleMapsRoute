@@ -2,86 +2,96 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <fragment
-        android:id="@+id/maps"
-        class="com.google.android.gms.maps.SupportMapFragment"
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <fragment
+                android:id="@+id/maps"
+                class="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
 
-    <LinearLayout
-        android:id="@+id/search_layout"
-        android:layout_width="match_parent"
-        android:layout_height="35dp"
-        android:orientation="horizontal"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginTop="10dp"
-        android:background="@android:color/white"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintVertical_bias="0">
+            <LinearLayout
+                android:id="@+id/search_layout"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:orientation="horizontal"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="10dp"
+                android:background="@android:color/white"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintVertical_bias="0">
 
-        <ImageView
-            android:id="@+id/pin_location_icon"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:background="@drawable/ic_ping_location"
-            android:layout_gravity="start"
-            android:contentDescription="pin_icon" />
+                <ImageView
+                    android:id="@+id/pin_location_icon"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:background="@drawable/ic_ping_location"
+                    android:layout_gravity="start"
+                    android:contentDescription="pin_icon" />
 
-        <Button
-            android:id="@+id/address_input"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@android:color/white"
-            android:textColor="@android:color/black"
-            android:singleLine="true"
-            android:textColorHint="@android:color/darker_gray"
-            android:autofillHints="Enter your destination"
-            tools:text="My location"
-            android:gravity="start|center_vertical"/>
+                <Button
+                    android:id="@+id/address_input"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@android:color/white"
+                    android:textColor="@android:color/black"
+                    android:singleLine="true"
+                    android:textColorHint="@android:color/darker_gray"
+                    android:autofillHints="Enter your destination"
+                    tools:text="My location"
+                    android:gravity="start|center_vertical"/>
 
-        <ImageView
-            android:id="@+id/voice_search_icon"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:background="@drawable/ic_voice_search"
-            android:layout_gravity="start"
-            android:contentDescription="speech to text" />
-    </LinearLayout>
+                <ImageView
+                    android:id="@+id/voice_search_icon"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:background="@drawable/ic_voice_search"
+                    android:layout_gravity="start"
+                    android:contentDescription="speech to text" />
+            </LinearLayout>
 
-    <Button
-        android:id="@+id/show_full_route_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@color/colorRoute"
-        android:textColor="@android:color/white"
-        android:text="See full route"
-        android:padding="8dp"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintVertical_bias="0.8"/>
+            <Button
+                android:id="@+id/show_full_route_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/colorRoute"
+                android:textColor="@android:color/white"
+                android:text="See full route"
+                android:padding="8dp"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintVertical_bias="0.8"/>
 
-    <FrameLayout
-        android:id="@+id/progress_bar"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        >
-        <androidx.core.widget.ContentLoadingProgressBar
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"/>
-    </FrameLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <FrameLayout
+                android:id="@+id/progress_bar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                >
+                <androidx.core.widget.ContentLoadingProgressBar
+                    style="?android:attr/progressBarStyleLarge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"/>
+            </FrameLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <include
+            android:id="@+id/bottom_sheet"
+            android:visibility="gone"
+            layout="@layout/route_steps_list" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
