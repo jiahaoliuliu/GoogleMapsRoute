@@ -9,7 +9,7 @@
             type="com.jiahaoliuliu.entity.Direction" />
     </data>
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/bottom_sheet"
+        android:id="@+id/route_steps_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#ffffff"

@@ -89,7 +89,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <include
-            android:id="@+id/bottom_sheet"
+            android:id="@+id/route_steps_list"
             android:visibility="gone"
             layout="@layout/route_steps_list" />
 

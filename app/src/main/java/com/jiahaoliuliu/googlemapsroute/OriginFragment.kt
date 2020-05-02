@@ -207,12 +207,12 @@ class OriginFragment: AbsBaseMapFragment() {
     override fun onNewRouteDrawn(direction: Direction, showRoute: Boolean) {
         // Set the steps list
         val visibility = if (showRoute) View.VISIBLE else View.GONE
-        binding.bottomSheet.root.visibility = visibility
+        binding.routeStepsList.root.visibility = visibility
 
-        binding.bottomSheet.direction = direction
+        binding.routeStepsList.direction = direction
         val stepsListAdapter = StepsListAdapter()
         stepsListAdapter.updateStepsList(direction.stepsList)
-        binding.bottomSheet.stepsList.adapter = stepsListAdapter
+        binding.routeStepsList.stepsList.adapter = stepsListAdapter
     }
 
     override fun onDestroy() {

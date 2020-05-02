@@ -145,9 +145,6 @@ class DestinationFragment: AbsBaseMapFragment() {
 
                 // Show time
                 addMarkerBetweenLocations("15h 40mins", arrayListOf(DirectionRepository.DXB_AIRPORT_LOCATION.toLatLng(), DirectionRepository.BALI_AIRPORT_LOCATION.toLatLng()))
-
-                // Hide de routes. This is not done yet
-                binding.bottomSheet.root.visibility = View.GONE
             }
         }
     }
@@ -160,12 +157,12 @@ class DestinationFragment: AbsBaseMapFragment() {
     override fun onNewRouteDrawn(direction: Direction, showRoute: Boolean) {
         // Set the steps list
         val visibility = if (showRoute) View.VISIBLE else View.GONE
-        binding.bottomSheet.root.visibility = visibility
+        binding.routeStepsList.root.visibility = visibility
 
-        binding.bottomSheet.direction = direction
+        binding.routeStepsList.direction = direction
         val stepsListAdapter = StepsListAdapter()
         stepsListAdapter.updateStepsList(direction.stepsList)
-        binding.bottomSheet.stepsList.adapter = stepsListAdapter
+        binding.routeStepsList.stepsList.adapter = stepsListAdapter
     }
 
     override fun setFinalLocation(finalLocation: Coordinate) {
