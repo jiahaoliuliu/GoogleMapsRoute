@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PointOfInterest
 import com.jiahaoliuliu.datalayer.GeocodeRepository
 import com.jiahaoliuliu.entity.Address
@@ -22,14 +21,16 @@ import javax.inject.Inject
 class PinSearchFragment: AbsBaseMapFragment() {
 
     companion object {
-        private val DEFAULT_LOCATION = LatLng(25.276, 55.296)
+        private val DEFAULT_LOCATION = Coordinate(25.276, 55.296)
         private const val DEFAULT_ZOOM = 15F
         private val compositeDisposable = CompositeDisposable()
         private const val ARGUMENT_KEY_CALLER = "Caller"
+        private const val ARGUMENT_KEY_DEFAULT_LOCATION = "Default location"
 
-        fun newInstance(caller: Caller): PinSearchFragment {
+        fun newInstance(caller: Caller, initialLocation: Coordinate): PinSearchFragment {
             val bundle = Bundle()
             bundle.putString(ARGUMENT_KEY_CALLER, caller.toString())
+            bundle.putParcelable(ARGUMENT_KEY_DEFAULT_LOCATION, initialLocation)
             val pingSearchBinding = PinSearchFragment()
             pingSearchBinding.arguments = bundle
             return pingSearchBinding
@@ -42,6 +43,7 @@ class PinSearchFragment: AbsBaseMapFragment() {
     private lateinit var onLocationSetByPinListener: OnLocationSetByPinListener
     private var mapsMovingToPointOfInterest = false
     private var caller: Caller = Caller.ORIGIN
+    private var defaultLocation: Coordinate = DEFAULT_LOCATION
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -56,6 +58,7 @@ class PinSearchFragment: AbsBaseMapFragment() {
         super.onCreate(savedInstanceState)
         arguments?.let {
             caller = Caller.valueOf(it.getString(ARGUMENT_KEY_CALLER)!!)
+            defaultLocation = it.getParcelable(ARGUMENT_KEY_DEFAULT_LOCATION)!!
         }
     }
 
@@ -81,7 +84,7 @@ class PinSearchFragment: AbsBaseMapFragment() {
     }
 
     override fun onMapSynchronized() {
-        googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM))
+        googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation.toLatLng(), DEFAULT_ZOOM))
     }
 
     override fun onMapCameraIdle() {

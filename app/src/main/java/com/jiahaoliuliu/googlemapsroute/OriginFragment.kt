@@ -91,7 +91,8 @@ class OriginFragment: AbsBaseMapFragment() {
         binding.addressInput.setOnClickListener {
             onSearchLocationListener.onSearchLocationByAddressRequested(
                 binding.addressInput.text.toString(), Caller.ORIGIN) }
-        binding.pinLocationIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByPinRequested(Caller.ORIGIN)}
+        binding.pinLocationIcon.setOnClickListener{
+            onSearchLocationListener.onSearchLocationByPinRequested(Caller.ORIGIN, DirectionRepository.DXB_AIRPORT_LOCATION)}
         binding.voiceSearchIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByVoiceRequested(Caller.ORIGIN)}
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity!!)
         // The super class will try to find the map and synchronize it

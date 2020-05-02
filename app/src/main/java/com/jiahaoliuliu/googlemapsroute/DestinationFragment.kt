@@ -87,7 +87,8 @@ class DestinationFragment: AbsBaseMapFragment() {
                 binding.addressInput.text.toString(), Caller.DESTINATION) }
         binding.showFullRouteButton.setOnClickListener{showFullRoute()}
         binding.voiceSearchIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByVoiceRequested(Caller.DESTINATION)}
-        binding.pinLocationIcon.setOnClickListener{ onSearchLocationListener.onSearchLocationByPinRequested(Caller.DESTINATION)}
+        binding.pinLocationIcon.setOnClickListener{
+            onSearchLocationListener.onSearchLocationByPinRequested(Caller.DESTINATION, DirectionRepository.BALI_AIRPORT_LOCATION)}
         super.onActivityCreated(savedInstanceState)
     }
 
