@@ -14,6 +14,7 @@ import com.google.android.gms.maps.model.*
 import com.google.maps.android.PolyUtil
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.entity.Coordinate
+import com.jiahaoliuliu.entity.Direction
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -153,6 +154,8 @@ abstract class AbsBaseMapFragment: Fragment() {
                 if (boundMapToLocations) {
                     boundMapToLocations(direction.bounds.northeast.toLatLng(), direction.bounds.southwest.toLatLng())
                 }
+
+                onNewRouteDrawn(direction)
             },
                 {throwable -> Timber.e(throwable, "Error getting the direction")}
             )
@@ -162,6 +165,8 @@ abstract class AbsBaseMapFragment: Fragment() {
     open fun showProgressScreen(showIt: Boolean) {
         // Do nothing. This method is mean to be overrided
     }
+
+    abstract fun onNewRouteDrawn(direction: Direction)
 
     fun boundMapToLocations(vararg locations: LatLng) {
         val width = resources.displayMetrics.widthPixels;

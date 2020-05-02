@@ -11,6 +11,7 @@ import com.google.android.gms.maps.model.PointOfInterest
 import com.jiahaoliuliu.datalayer.GeocodeRepository
 import com.jiahaoliuliu.entity.Address
 import com.jiahaoliuliu.entity.Coordinate
+import com.jiahaoliuliu.entity.Direction
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentPingSearchBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -103,6 +104,11 @@ class PinSearchFragment: AbsBaseMapFragment() {
                     Timber.e(throwable, "Error getting the address")
                 })
         }
+    }
+
+    override fun onNewRouteDrawn(direction: Direction) {
+        // TODO: Create a simple map fragment to separate it from the AbsBaseMapFragment
+        // Not do anything
     }
 
     private fun showAddress(address: Address) {

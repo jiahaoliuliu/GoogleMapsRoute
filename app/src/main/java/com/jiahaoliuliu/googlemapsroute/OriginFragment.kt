@@ -15,6 +15,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.datalayer.PlacesRepository
 import com.jiahaoliuliu.entity.Coordinate
+import com.jiahaoliuliu.entity.Direction
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentOriginBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -200,6 +201,14 @@ class OriginFragment: AbsBaseMapFragment() {
     override fun showProgressScreen(showIt: Boolean) {
         val visibility = if (showIt) View.VISIBLE else View.GONE
         binding.progressBar.visibility = visibility
+    }
+
+    override fun onNewRouteDrawn(direction: Direction) {
+        // TODO: Play with the views
+
+        binding.bottomSheet.direction = direction
+        // Set the steps list
+        Timber.v("New route: $direction")
     }
 
     override fun onDestroy() {

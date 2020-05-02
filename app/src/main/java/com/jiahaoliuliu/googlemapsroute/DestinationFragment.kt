@@ -13,6 +13,7 @@ import com.google.android.gms.maps.model.PolylineOptions
 import com.jiahaoliuliu.datalayer.DirectionRepository
 import com.jiahaoliuliu.datalayer.PlacesRepository
 import com.jiahaoliuliu.entity.Coordinate
+import com.jiahaoliuliu.entity.Direction
 import com.jiahaoliuliu.googlemapsroute.databinding.FragmentDestinationBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -150,6 +151,10 @@ class DestinationFragment: AbsBaseMapFragment() {
     override fun showProgressScreen(showIt: Boolean) {
         val visibility = if (showIt) View.VISIBLE else View.GONE
         binding.progressBar.visibility = visibility
+    }
+
+    override fun onNewRouteDrawn(direction: Direction) {
+        // TODO: Implement this
     }
 
     override fun setFinalLocation(finalLocation: Coordinate) {
