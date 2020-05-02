@@ -205,8 +205,7 @@ class OriginFragment: AbsBaseMapFragment() {
 
     override fun onNewRouteDrawn(direction: Direction) {
         // Set the steps list
-        Timber.v("New route: $direction")
-
+        binding.bottomSheet.root.visibility = View.VISIBLE
         binding.bottomSheet.direction = direction
         val stepsListAdapter = StepsListAdapter()
         stepsListAdapter.updateStepsList(direction.stepsList)
