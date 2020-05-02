@@ -6,6 +6,6 @@ To run it you are going to need an API key with the Direction API and Place API 
 
 Some screenshots are:
 
-![Origin](https://github.com/jiahaoliuliu/GoogleMapsRoute/screenshots/Origin.png)
-![Destination](https://github.com/jiahaoliuliu/GoogleMapsRoute/screenshots/Destination.png)
-![Full Route](https://github.com/jiahaoliuliu/GoogleMapsRoute/screenshots/FullRoute.png)
+![Origin](https://github.com/jiahaoliuliu/GoogleMapsRoute/blob/master/screenshots/Origin.png)
+![Destination](https://github.com/jiahaoliuliu/GoogleMapsRoute/blob/master/screenshots/Destination.png)
+![Full Route](https://github.com/jiahaoliuliu/GoogleMapsRoute/blob/master/screenshots/FullRoute.png)
